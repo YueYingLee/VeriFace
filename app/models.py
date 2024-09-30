@@ -15,6 +15,8 @@ class User(db.Model, UserMixin):
     password = db.Column(db.String(32), nullable=False)
     fname = db.Column(db.String(150))
     lname = db.Column(db.String(150))
+    file = db.Column(db.String(50), nullable = False)
+    data = db.Column(db.LargeBinary, nullable = False)
     # profile_picture = db.Column(db.LargeBinary)
     # add one to see if profile picture uploaded is the same as the face of the person being scanned
     # add to check for image upload approvable on admin view

@@ -4,13 +4,20 @@ from flask import flash
 from .forms import LoginForm, LogoutForm, HomeForm, RegisterForm
 from werkzeug.security import generate_password_hash, check_password_hash
 from .models import User
+
 from app import myapp_obj
 from flask_login import current_user
 from flask_login import login_user
 from flask_login import logout_user
 from flask_login import login_required
+from werkzeug.utils import secure_filename
+from io import BytesIO
 from . import db
-    
+
+
+# # Define allowed files
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
+
 @myapp_obj.route("/", methods=['GET', 'POST'])
 @myapp_obj.route("/login", methods=['GET', 'POST'])
 def login():
@@ -82,9 +89,13 @@ def register():
        flash('That email already exists')
        return redirect ('/register')
     
+
     if form.validate_on_submit():
+        if request.method == "POST":
+            file = request.files['file']
+            
             #approve = 1 initally so all users registered need to be approved
-            new = User(fname = form.fname.data, lname = form.lname.data, username = form.username.data, email = form.email.data)
+            new = User(fname = form.fname.data, lname = form.lname.data, username = form.username.data, email = form.email.data, file = file.filename, data=file.read())
             new.set_password(form.password.data)
             db.session.add(new)
             db.session.commit()

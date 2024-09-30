@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from flask import render_template
-from wtforms import StringField, PasswordField, SubmitField, validators
+from wtforms import StringField, PasswordField, SubmitField, FileField, validators
 from wtforms.validators import DataRequired, EqualTo
 
 class LoginForm(FlaskForm):
@@ -24,6 +24,7 @@ class RegisterForm(FlaskForm):
     email = StringField('Email', validators=[DataRequired(), validators.Length(max=32)], render_kw={"placeholder": "guest@sjsu.com"})
     #check if new password and confirm password are equal to each other
     password = PasswordField('New Password', [DataRequired(), EqualTo('confirm', message='Passwords must match'), validators.Length(max=32)])
+    file = FileField('Choose File')
     confirm  = PasswordField('Confirm Password', [DataRequired(), EqualTo('password', message='Passwords must match'), validators.Length(max=32)])
     # add image upload later
     submit = SubmitField('Submit')

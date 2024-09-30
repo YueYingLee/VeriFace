@@ -7,7 +7,7 @@
 <div class ="text">
 <h1>Create a New Account</h1>
 <body> To register, please fill out the following fields below </body>
-<form action="" method="POST" novalidate>
+<form action="" method="POST" enctype="multipart/form-data" novalidate>
     {{form.hidden_tag()}}
     
     <p> {{form.fname.label}} <br>
@@ -55,7 +55,11 @@
     <span style="color: red;"> [{{error}}]</span>
     {% endfor %}
     </p>
+
     <body> Password can be up to 32 characters </body>
+
+    <p>{{form.file.label}} {{form.file()}}</p>
+
     <p>{{form.submit()}}</p>
     <body><br>
            Already have an account?
