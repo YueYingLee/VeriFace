@@ -2,7 +2,98 @@
 {% block content %}
 <head>
     <!-- <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}"> -->
-</head>
+</head> 
+<style>
+  h1 {
+          text-align: center;
+          font-weight: bold;
+      }
+ body {
+     font-family: Arial, sans-serif;
+     background-color: #ffffff;
+     color: #000000;
+     margin: 0;
+ }
+ .navbar {
+   background-color: #4170a2; 
+     /*text-align: center; */
+     padding: 50px 0;  
+     font-size: 30px;
+     justify-content: flex-start; 
+     color: black; /* Black text color */
+     font-weight: bold; /* Bold font weight */
+     text-decoration: none; 
+ } 
+ .navbar a {
+            color: black; 
+            text-decoration: none; 
+            margin-right: 25px;
+        }
+ .navbar-link {
+     color: black; /* Set the color to black */
+     text-decoration: none; /* Remove underline */
+     }
+
+ .container {
+     max-width: 600px;
+     margin: 20px auto;
+     /*padding: 20px; */
+     border: 1px solid #cccccc;
+     background-color: rgb(204, 224, 239);
+     border-radius: 10px;
+     align-items: center;
+ }
+ .form-group {
+     margin-bottom: 20px;
+ }
+ .form-control {
+     width: 90%;
+     padding: 10px;
+     font-size: 16px;
+     border: 1px solid #cccccc;
+     border-radius: 5px;
+ }
+ .form-control:focus {
+     outline: none;
+     border-color: #007bff;
+ }
+ .btn {
+     display: inline-block;
+     padding: 10px 20px;
+     font-size: 16px;
+     border: none;
+     border-radius: 5px;
+     background-color: #a93f3f;
+     color: #ffffff;
+     cursor: pointer;
+ }
+ .btn:hover {
+     background-color: #0056b3;
+ }
+ .error {
+     color: #ff0000;
+     font-size: 14px;
+ }
+
+ .alert {
+     padding: 15px;
+     margin-bottom: 20px;
+     border: 1px solid transparent;
+     border-radius: 4px;
+ }
+ .alert-success {
+     color: #3c763d;
+     background-color: #dff0d8;
+     border-color: #d6e9c6;
+ }
+ .alert-error {
+     color: #a94442;
+     background-color: #f2dede;
+     border-color: #ebccd1;
+ }
+</style> 
+
+<!-- 
 <nav class="navbar navbar-expand-lg navbar-light">
   <a class="navbar-brand" href="/">VeriFace</a>
   <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -17,10 +108,16 @@
         <a class="nav-link" href="/logout">Logout</a>
       </li>
     </ul>
-  </div>
-</nav>
-</br>
-<div class = "boxing">
+
+ ----->  
+ <div class="navbar">
+  <a href="/"> &nbsp;&nbsp;&nbsp; VeriFace </a> 
+  &nbsp; &nbsp;<a href="/">Home <span class="sr-only">(current)</span></a>   
+  &nbsp; &nbsp;<a href="/logout">Logout</a>
+</div>  
+<div class ="container"> 
+<div class = "boxing"> 
+  <br>
   <p> Welcome {{current_user.username}}!</p>
 </div>
 <h2>Account Info</h2>
@@ -30,4 +127,5 @@
   <p>Last Name: {{current_user.lname}}</p>
   <p>Email: {{current_user.email}}</p>
 </div>
+</div> 
 {% endblock %}

@@ -3,10 +3,97 @@
 <head>
     <!-- <link rel="stylesheet" href="{{ url_for('static', filename='css/register.css') }}"> -->
 </head>
+<body> <div class="navbar"> 
+   <a href="/"class="navbar-link">&nbsp;&nbsp;&nbsp;VeriFace </a> </div>
 <div class ="container">
 <div class ="text">
-<h1>Create a New Account</h1>
-<body> To register, please fill out the following fields below </body>
+<h1>Create a New Account</h1> 
+<style>
+    h1 {
+            text-align: center;
+            font-weight: bold;
+        }
+   body {
+       font-family: Arial, sans-serif;
+       background-color: #ffffff;
+       color: #000000;
+       margin: 0;
+   }
+   .navbar {
+     background-color: #4170a2; 
+       text-align: center;
+       padding: 50px 0;
+       font-size: 30px;
+       color: black; /* Black text color */
+       font-weight: bold; /* Bold font weight */
+   } 
+
+   .navbar-link {
+       color: black; /* Set the color to black */
+       text-decoration: none; /* Remove underline */
+       }
+
+  
+   .container {
+       max-width: 600px;
+       margin: 20px auto;
+       padding: 20px;
+       border: 1px solid #cccccc;
+       background-color: rgb(204, 224, 239);
+       border-radius: 10px;
+       align-items: center;
+   }
+   .form-group {
+       margin-bottom: 20px;
+   }
+   .form-control {
+       width: 90%;
+       padding: 10px;
+       font-size: 16px;
+       border: 1px solid #cccccc;
+       border-radius: 5px;
+   }
+   .form-control:focus {
+       outline: none;
+       border-color: #007bff;
+   }
+   .btn {
+       display: inline-block;
+       padding: 10px 20px;
+       font-size: 16px;
+       border: none;
+       border-radius: 5px;
+       background-color: #007bff;
+       color: #ffffff;
+       cursor: pointer;
+   }
+   .btn:hover {
+       background-color: #0056b3;
+   }
+   .error {
+       color: #ff0000;
+       font-size: 14px;
+   }
+
+   .alert {
+       padding: 15px;
+       margin-bottom: 20px;
+       border: 1px solid transparent;
+       border-radius: 4px;
+   }
+   .alert-success {
+       color: #3c763d;
+       background-color: #dff0d8;
+       border-color: #d6e9c6;
+   }
+   .alert-error {
+       color: #a94442;
+       background-color: #f2dede;
+       border-color: #ebccd1;
+   }
+  
+</style> 
+<body> To register, please fill out the following fields below. <p></p></body>
 <form action="" method="POST" novalidate>
     {{form.hidden_tag()}}
     
@@ -57,7 +144,7 @@
     </p>
     <body> Password can be up to 32 characters </body>
     <p>{{form.submit()}}</p>
-    <body><br>
+    <body> 
            Already have an account?
     </body>
     <p>{{form.sign()}}</p>
