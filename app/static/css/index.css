@@ -1,0 +1,28 @@
+
+  h1 {
+    color: #392F5A;
+    font-size: 200%;
+    font-weight: bold;
+    text-align:center;
+  }
+  h2 {
+    color: #392F5A;
+    font-size: 200%;
+    text-align:center;
+  }
+  th, td{
+    padding:5px;
+    border: solid 1px;
+    border-spacing: 5px;
+   }
+   th{
+    background-color: #AEA7C6;
+   }
+  tr:nth-child(even){
+    background-color: #f2f2f2;
+  }
+  table{
+    width: 80%;
+    margin-left: auto;
+    margin-right: auto;
+  }

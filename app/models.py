@@ -20,6 +20,10 @@ class User(db.Model, UserMixin):
     # profile_picture = db.Column(db.LargeBinary)
     # add one to see if profile picture uploaded is the same as the face of the person being scanned
     # add to check for image upload approvable on admin view
+    picApprove = db.Column(db.Integer)
+    roleApprove = db.Column(db.Integer)
+    reg_role = db.Column(db.String(32), nullable=False)
+    act_role = db.Column(db.String(32), nullable=False)
 
     def set_password(self, password):
         self.password = generate_password_hash(password)

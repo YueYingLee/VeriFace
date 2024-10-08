@@ -9,6 +9,15 @@
 <body> To register, please fill out the following fields below </body>
 <form action="" method="POST" enctype="multipart/form-data" novalidate>
     {{form.hidden_tag()}}
+
+    <body> Possible roles are: guest, student, professor, staff, and admin </body>
+    <p> {{form.reg_role.label}} <br>
+      {{form.reg_role(size=32)}}
+
+   {%for error in form.reg_role.errors%}
+   <span style="color: red;"> [{{error}}]</span>
+   {% endfor %}
+   </p>
     
     <p> {{form.fname.label}} <br>
         {{form.fname(size=32)}}
@@ -32,7 +41,6 @@
     {% endfor %}
     </p>
 
-    
 
     <p> {{form.email.label}} <br>
        {{form.email(size=32)}}
@@ -48,6 +56,8 @@
     <span style="color: red;"> [{{error}}]</span>
     {% endfor %}
     </p>
+
+  
 
     <p> {{form.confirm.label}} <br>
        {{form.confirm(size=32)}}

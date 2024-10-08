@@ -22,6 +22,7 @@ class RegisterForm(FlaskForm):
     lname = StringField('Last Name', validators=[DataRequired(), validators.Length(max=32)], render_kw={"placeholder": "last_name"})
     username = StringField('Username', validators=[DataRequired(), validators.Length(max=32)], render_kw={"placeholder": "guest_1"})
     email = StringField('Email', validators=[DataRequired(), validators.Length(max=32)], render_kw={"placeholder": "guest@sjsu.com"})
+    reg_role  = StringField('Role', validators=[DataRequired(), validators.Length(max=32)], render_kw={"placeholder": "guest"})
     #check if new password and confirm password are equal to each other
     password = PasswordField('New Password', [DataRequired(), EqualTo('confirm', message='Passwords must match'), validators.Length(max=32)])
     file = FileField('Choose File')
@@ -29,3 +30,7 @@ class RegisterForm(FlaskForm):
     # add image upload later
     submit = SubmitField('Submit')
     sign = SubmitField('Sign In')
+
+class AdminForm(FlaskForm):
+    #for editing roles
+    edit = SubmitField('Edit')
