@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block content %}
+<head>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
+</head>
+<nav class="navbar navbar-expand-lg navbar-light">
+  <a class="navbar-brand" href="/">VeriFace</a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  <div class="collapse navbar-collapse" id="navbarNav">
+    <ul class="navbar-nav">
+      <li class="nav-item active">
+        <a class="nav-link" href="/">Home <span class="sr-only">(current)</span></a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="/logout">Logout</a>
+      </li>
+    </ul>
+  </div>
+</nav>
+</br>
+
+<div class ="container"> 
+    <div class = "boxing"> 
+      <br>
+      <p> Welcome {{current_user.username}}!</p>
+    </div>
+    <h2>Account Info</h2>
+    <div class = "text">
+      <p>Username: {{current_user.username}}</p>
+      <p>First Name: {{current_user.fname}}</p>
+      <p>Last Name: {{current_user.lname}}</p>
+      <p>Email: {{current_user.email}}</p>
+      <p><a href="download/{{ current_user.id }}">Profile</a></p>
+    </div>
+    </div> 
+
+<h2>Users </h2>
+<table>
+  <thread>
+    <tr>
+      <th>Username</th>
+      <th>Requested Role </th>
+      <th>Picture Approval Status</th>
+      <th>User Role Approval Status</th>
+    </tr>
+  </thread>
+  <tbody>
+    {%for users in users%}
+    <tr> 
+      <td> {{users.username}}</td>
+      <td>{{users.reg_role}}</td>
+
+      {%if users.picApprove == 1%}
+      <td><a href="{{url_for('ApprovePicture', id = users.id)}}">Yes Pic</a></td>
+      {%else%}
+      <td><a href="{{url_for('UnPicture', id = users.id)}}">Bad Pic</a></td>
+      {%endif%}
+
+      {%if users.roleApprove == 1%}
+      <td><a href="{{url_for('ApproveUser', id = users.id)}}">Approve Role</a></td>
+      {%else%}
+      <td><a href="{{url_for('UnapproveUser', id = users.id)}}">Change Role</a></td>
+      {%endif%}
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}
