@@ -20,7 +20,7 @@ def start_video(encoded_images):
     
     # Set up video camera capture
     cap = cv2.VideoCapture(0)
-    print('Setting up camera. Press "Q" to quit.')
+    print('Setting up camera. Press "Q" to quit.\n')
 
     while True:
         ret, frame = cap.read()
@@ -28,6 +28,9 @@ def start_video(encoded_images):
         if not ret:
             break
         else:
+
+            # Mirrored camera
+            frame = cv2.flip(frame, 1)
             
             # Only process faces every 5 frames to improve camera performance
             if frame_count % 5 == 0:
@@ -79,7 +82,7 @@ def main():
     end = time.time()
 
     elapsed_time = end - start
-    print(f"Execution time: {elapsed_time:.4f} seconds")
+    print(f"Execution time: {elapsed_time:.4f} seconds\n")
 
     start_video(encoded_images)
 

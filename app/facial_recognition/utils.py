@@ -5,9 +5,13 @@ import face_recognition as fr
 import os
 import pickle
 
+# Useful global variables
+
 current_dir = os.path.dirname(os.path.abspath(__file__))                            # directory of current file
 assets_path = os.path.join(current_dir, 'assets')                                   # Path to assets/ 
 encoded_file_path = os.path.join(assets_path, 'encoded.pkl')                        # Path to the cached encodings
+
+supported_extensions = ('.jpg', '.jpeg', '.png')
 
 
 '''
@@ -20,7 +24,6 @@ Function to gather images and names from a given path to the directory containin
     - names: a list of the names of the files in the directory
 '''
 def get_images_and_names(path):
-    supported_extensions = ('.jpg', '.jpeg', '.png')
     image_files = [file for file in os.listdir(path) if file.lower().endswith(supported_extensions)]
 
     images = []
@@ -50,10 +53,26 @@ Function to encode images
 '''
 def get_encoded_images(images, names):
 
-    # Check for cached encodings
-    if os.path.exists(encoded_file_path):
-        print('Found cached encodings.')
-        print('Loading existing encodings...')
+    '''
+    Let's check for cached encodings to speed up the process because encoding is slow ;(
+    
+    The logic is:
+        - if there is no exisiting cached encoding              --> create new encodings
+        - else cache exists but assets/ folder was modified     --> create new encodings
+        - else cache exists and there were no modifications     --> reuse cached encodings
+    '''
+
+    # If no cache exists
+    if not os.path.exists(encoded_file_path):
+        print('Cached encodings not found. Creating new encodings...')
+    
+    # If assets directory was modified i.e modified datetimes do not match between assets/ and encoded.pkl
+    elif os.path.getmtime(assets_path) - os.path.getmtime(encoded_file_path) > 1:
+        print('Assets directory has been modified. Regenerating encodings...')
+    
+    # Reuse cache! :D
+    else:
+        print('Found cached encodings! Loading existing encodings...')
 
         with open(encoded_file_path, 'rb') as f:
             encode_map = pickle.load(f)
@@ -62,10 +81,7 @@ def get_encoded_images(images, names):
             raise ValueError('ERROR: Cached encodings are empty.')
         return encode_map
     
-    # if no cache exists, create new encodings
-    print('Cached encodings not found.')
-    print('Creating encodings for all images... This may take a moment...')
-
+    print('This may take a moment...\n')
     encode_map = {}
 
     for img, name in zip(images, names):
