@@ -21,3 +21,6 @@ venv/
 *.tmp
 *.swp
 *.swo
+
+# Ignore assets for now, later on we can fill it with images
+assets/
