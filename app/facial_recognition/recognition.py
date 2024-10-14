@@ -55,7 +55,7 @@ def start_video(encoded_images):
                 # Draw rectangle around the face and label with the name of the identified person
                 top, right, bottom, left = location
                 cv2.rectangle(frame, (left, top), (right, bottom), (0, 255, 0), 3)
-                cv2.putText(frame, name, (left, bottom + 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 0), 2)
+                cv2.putText(frame, name, (left, bottom + 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (190, 200, 50), 2)
 
             cv2.imshow('Frame', frame)
             if cv2.waitKey(1) & 0xFF == ord('q'):
