@@ -1,9 +1,9 @@
 from flask import render_template
 from flask import redirect, request, url_for
 from flask import flash, send_file, send_from_directory
-from .forms import LoginForm, LogoutForm, HomeForm, RegisterForm, AdminForm
+from .forms import LoginForm, LogoutForm, HomeForm, RegisterForm, AdminForm, AddEventsForm, ViewEventsForm
 from werkzeug.security import generate_password_hash, check_password_hash
-from .models import User
+from .models import User, Event
 
 from app import myapp_obj
 from flask_login import current_user
@@ -55,6 +55,8 @@ def index():
         return redirect('/')
     if current_user.act_role == 'admin':
         return redirect('/admin')
+    if current_user.act_role == 'professor' or current_user.act_role == 'staff':
+        return redirect('/addEvents')
     form = HomeForm()
     return render_template('index.html', form = form)
 
@@ -66,6 +68,29 @@ def admin():
     form = AdminForm()
     users = User.query.filter_by() 
     return render_template('admin.html', form = form , users = users)
+
+@myapp_obj.route("/addEvents", methods=['GET', 'POST'])
+def addEvents():
+    if not current_user.is_authenticated: 
+        flash("You aren't logged in yet!")
+        return redirect('/')
+    form = AddEventsForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(username=current_user.username).first()
+        new = Event(hostId = user.id, eventName = form.eventName.data, date = form.date.data, time = form.time.data)
+        db.session.add(new)
+        db.session.commit()
+        return redirect("/viewEvents")
+    return render_template('addEvents.html', form = form)
+
+@myapp_obj.route("/viewEvents", methods=['GET', 'POST'])
+def viewEvents():
+    if not current_user.is_authenticated: 
+        flash("You aren't logged in yet!")
+        return redirect('/')
+    form = ViewEventsForm()
+    events = Event.query.filter_by() 
+    return render_template('viewEvents.html', form = form , events = events)
 
 @myapp_obj.route("/ApprovePicture/<int:id>")
 def ApprovePicture(id): #get user id of the user is getting approved
