@@ -4,12 +4,16 @@ import cv2
 import face_recognition as fr
 import os
 import pickle
+from datetime import datetime
+import csv
 
 # Useful global variables
 
-current_dir = os.path.dirname(os.path.abspath(__file__))                            # directory of current file
-assets_path = os.path.join(current_dir, 'assets')                                   # Path to assets/ 
+facial_path = os.path.dirname(os.path.abspath(__file__))                            # Path to facial_recognition/
+assets_path = os.path.join(facial_path, 'assets')                                   # Path to assets/
 encoded_file_path = os.path.join(assets_path, 'encoded.pkl')                        # Path to the cached encodings
+app_path = os.path.dirname(facial_path)                                             # Path to app/ 
+attendance_path = os.path.join(app_path, 'attendance')                              # Path to attendance/
 
 supported_extensions = ('.jpg', '.jpeg', '.png')
 
@@ -99,3 +103,11 @@ def get_encoded_images(images, names):
     
     print('Encoding finished!')
     return encode_map
+
+
+def mark_attendance(name):
+    current_datetime = datetime.now().strftime("%B %d, %Y %I:%M:%S %p")
+    current_date = datetime.now().strftime("%m-%d-%Y")
+
+    with open(f'{os.path.join(attendance_path, str(current_date))}.csv', 'a') as f:
+        pass
