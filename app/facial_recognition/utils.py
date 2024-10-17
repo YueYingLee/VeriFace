@@ -108,6 +108,18 @@ def get_encoded_images(images, names):
 def mark_attendance(name):
     current_datetime = datetime.now().strftime("%B %d, %Y %I:%M:%S %p")
     current_date = datetime.now().strftime("%m-%d-%Y")
+    filename = os.path.join(attendance_path, current_date) + '.csv'
 
-    with open(f'{os.path.join(attendance_path, str(current_date))}.csv', 'a') as f:
-        pass
+    with open(filename, 'a') as f:
+        fieldnames = ['Name', 'Datetime']
+        row = {
+            'Name': name,
+            'Datetime': current_datetime
+        }
+
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        if os.stat(filename).st_size == 0:
+            writer.writeheader()
+        writer.writerow(row)
+
+        print(f'Marked attendance for {name}')

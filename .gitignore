@@ -24,3 +24,5 @@ venv/
 
 # Ignore assets for now, later on we can fill it with images
 assets/
+
+attendance/

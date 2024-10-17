@@ -22,7 +22,7 @@ def start_video(encoded_images):
     confirm_face = 0
 
     # This is temp. There will be something similar to this to target whatever RFID tag was scanned.
-    target = 'kenneth_nguyen'
+    target = 'charlotte_ying'
     
     # Set up video camera capture
     cap = cv2.VideoCapture(0)
@@ -39,41 +39,44 @@ def start_video(encoded_images):
             frame = cv2.flip(frame, 1)
             
             # Only process faces every few frames to improve camera performance
-            if frame_count % 4 == 0:
+            if frame_count % 10 == 0:
                 face_location = fr.face_locations(frame)
-                face_encoded = fr.face_encodings(frame, face_location)
+                if len(face_location) > 1:
+                    print('Please have only 1 face in frame at a time.')
+                else:
+                    face_encoded = fr.face_encodings(frame, face_location)
             frame_count += 1
 
             for encoded, location in zip(face_encoded, face_location):
-                if frame_count % 2 == 0:
-                    matches = fr.compare_faces(list(encoded_images.values()), encoded, 0.5)
-                    face_distances = fr.face_distance(list(encoded_images.values()), encoded)
+                
+                matches = fr.compare_faces(list(encoded_images.values()), encoded, 0.5)
+                face_distances = fr.face_distance(list(encoded_images.values()), encoded)
 
-                    print(face_distances)
+                print(face_distances)
 
-                    # Try to identify the face
-                    name = 'Unknown'
-                    best_match_idx = np.argmin(face_distances)
-                    if matches[best_match_idx]:
-                        name = list(encoded_images.keys())[best_match_idx]
-                        if name == target:
-                            confirm_face += 1
-                        else:
-                            confirm_face = 0
+                # Try to identify the face
+                name = 'Unknown'
+                best_match_idx = np.argmin(face_distances)
+                if matches[best_match_idx]:
+                    name = list(encoded_images.keys())[best_match_idx]
+                    if name == target:
+                        confirm_face += 1
                     else:
-                        name = 'Unknown'
                         confirm_face = 0
+                else:
+                    name = 'Unknown'
+                    confirm_face = 0
 
-                    # Draw rectangle around the face and label with the name of the identified person
-                    top, right, bottom, left = location
-                    cv2.rectangle(frame, (left, top), (right, bottom), (0, 255, 0), 3)
-                    cv2.putText(frame, name, (left, bottom + 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (190, 200, 50), 2)
+                # Draw rectangle around the face and label with the name of the identified person
+                top, right, bottom, left = location
+                cv2.rectangle(frame, (left, top), (right, bottom), (0, 255, 0), 3)
+                cv2.putText(frame, name, (left, bottom + 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (190, 200, 50), 2)
 
             cv2.imshow('Frame', frame)
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 print('Exit Success')
                 break
-            elif confirm_face == 4:
+            elif confirm_face == 11:
                 print(f'Identified {name}')
                 utils.mark_attendance(name)
                 break
