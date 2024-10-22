@@ -2,6 +2,8 @@ from flask_wtf import FlaskForm
 from flask import render_template
 from wtforms import StringField, PasswordField, SubmitField, FileField, validators
 from wtforms.validators import DataRequired, EqualTo
+from wtforms.fields import DateField, TimeField
+from datetime import datetime
 
 class LoginForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired(), validators.Length(max=32)], render_kw={"placeholder": "guest_1"})
@@ -33,4 +35,13 @@ class RegisterForm(FlaskForm):
 
 class AdminForm(FlaskForm):
     #for editing roles
+    edit = SubmitField('Edit')
+
+class AddEventsForm(FlaskForm):
+    eventName = StringField('Event Name', validators=[DataRequired(), validators.Length(max=32)], render_kw={"placeholder": "Event A"})
+    date = DateField('Date', format='%Y-%m-%d', default=datetime.now() )
+    time = TimeField('Time', format='%H:%M', default=datetime.now())
+    submit = SubmitField('Submit')
+
+class ViewEventsForm(FlaskForm):
     edit = SubmitField('Edit')
