@@ -3,7 +3,6 @@
 import cv2
 import face_recognition as fr
 import numpy as np
-import time
 
 import utils
 
@@ -22,7 +21,7 @@ def start_video(encoded_images):
     confirm_face = 0
 
     # This is temp. There will be something similar to this to target whatever RFID tag was scanned.
-    target = 'charlotte_ying'
+    target = 'kenneth_nguyen'
     
     # Set up video camera capture
     cap = cv2.VideoCapture(0)
@@ -37,14 +36,18 @@ def start_video(encoded_images):
 
             # Mirrored camera
             frame = cv2.flip(frame, 1)
-            
+
+            # Scale down frame to process encodings faster
+            scale_factor = 0.33
+            small_frame = cv2.resize(frame, (0, 0), fx=scale_factor, fy=scale_factor)
+
             # Only process faces every few frames to improve camera performance
-            if frame_count % 10 == 0:
-                face_location = fr.face_locations(frame)
+            if frame_count % 2 == 0:
+                face_location = fr.face_locations(small_frame)
                 if len(face_location) > 1:
                     print('Please have only 1 face in frame at a time.')
                 else:
-                    face_encoded = fr.face_encodings(frame, face_location)
+                    face_encoded = fr.face_encodings(small_frame, face_location)
             frame_count += 1
 
             for encoded, location in zip(face_encoded, face_location):
@@ -68,7 +71,12 @@ def start_video(encoded_images):
                     confirm_face = 0
 
                 # Draw rectangle around the face and label with the name of the identified person
+                multiply_factor = int(1/scale_factor)
                 top, right, bottom, left = location
+                top *= multiply_factor
+                right *= multiply_factor
+                bottom *= multiply_factor
+                left *= multiply_factor
                 cv2.rectangle(frame, (left, top), (right, bottom), (0, 255, 0), 3)
                 cv2.putText(frame, name, (left, bottom + 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (190, 200, 50), 2)
 
@@ -76,7 +84,7 @@ def start_video(encoded_images):
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 print('Exit Success')
                 break
-            elif confirm_face == 11:
+            elif confirm_face == 10:
                 print(f'Identified {name}')
                 utils.mark_attendance(name)
                 break
@@ -85,8 +93,6 @@ def start_video(encoded_images):
     cv2.destroyAllWindows()
 
 def main():
-    start = time.time()
-
     try:
         images, names = utils.get_images_and_names(utils.assets_path)
     except ValueError as e:
@@ -98,11 +104,6 @@ def main():
     except ValueError as e:
         print(e)
         exit()
-
-    end = time.time()
-
-    elapsed_time = end - start
-    print(f"Execution time: {elapsed_time:.4f} seconds\n")
 
     start_video(encoded_images)
 

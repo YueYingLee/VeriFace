@@ -3,7 +3,7 @@
 import cv2
 import face_recognition as fr
 import os
-import pickle
+import json
 from datetime import datetime
 import csv
 
@@ -11,7 +11,7 @@ import csv
 
 facial_path = os.path.dirname(os.path.abspath(__file__))                            # Path to facial_recognition/
 assets_path = os.path.join(facial_path, 'assets')                                   # Path to assets/
-encoded_file_path = os.path.join(assets_path, 'encoded.pkl')                        # Path to the cached encodings
+encoded_file_path = os.path.join(assets_path, 'encoded.json')                       # Path to the cached encodings
 app_path = os.path.dirname(facial_path)                                             # Path to app/ 
 attendance_path = os.path.join(app_path, 'attendance')                              # Path to attendance/
 
@@ -70,7 +70,7 @@ def get_encoded_images(images, names):
     if not os.path.exists(encoded_file_path):
         print('Cached encodings not found. Creating new encodings...')
     
-    # If assets directory was modified i.e modified datetimes do not match between assets/ and encoded.pkl
+    # If assets directory was modified i.e modified datetimes do not match between assets/ and encoded.json
     elif os.path.getmtime(assets_path) - os.path.getmtime(encoded_file_path) > 1:
         print('Assets directory has been modified. Regenerating encodings...')
     
@@ -78,8 +78,8 @@ def get_encoded_images(images, names):
     else:
         print('Found cached encodings! Loading existing encodings...')
 
-        with open(encoded_file_path, 'rb') as f:
-            encode_map = pickle.load(f)
+        with open(encoded_file_path, 'r') as f:
+            encode_map = json.load(f)
 
         if not encode_map:
             raise ValueError('ERROR: Cached encodings are empty.')
@@ -91,12 +91,12 @@ def get_encoded_images(images, names):
     for img, name in zip(images, names):
         encode = fr.face_encodings(img)
         if encode:
-            encode_map[name] = encode[0]
+            encode_map[name] = list(encode[0])
         else:
             print(f'ERROR: No faces found in image for {name}. Skipping...')
 
-    with open(encoded_file_path, 'wb') as f:
-        pickle.dump(encode_map, f)
+    with open(encoded_file_path, 'w') as f:
+        json.dump(encode_map, f, indent=4)
 
     if not encode_map:
         raise ValueError('ERROR: Encoding failed.')
