@@ -2,7 +2,7 @@ from flask_wtf import FlaskForm
 from flask import render_template
 from wtforms import StringField, PasswordField, SubmitField, FileField, validators
 from wtforms.validators import DataRequired, EqualTo
-from wtforms.fields import DateField, TimeField
+from wtforms.fields import DateField, TimeField, SelectField
 from datetime import datetime
 
 class LoginForm(FlaskForm):
@@ -24,7 +24,18 @@ class RegisterForm(FlaskForm):
     lname = StringField('Last Name', validators=[DataRequired(), validators.Length(max=32)], render_kw={"placeholder": "last_name"})
     username = StringField('Username', validators=[DataRequired(), validators.Length(max=32)], render_kw={"placeholder": "guest_1"})
     email = StringField('Email', validators=[DataRequired(), validators.Length(max=32)], render_kw={"placeholder": "guest@sjsu.com"})
-    reg_role  = StringField('Role', validators=[DataRequired(), validators.Length(max=32)], render_kw={"placeholder": "guest"})
+    #reg_role  = StringField('Role', validators=[DataRequired(), validators.Length(max=32)], render_kw={"placeholder": "guest"})
+    reg_role = SelectField(
+        'Role',
+        validators=[DataRequired()],
+        choices=[
+            ('admin', 'Admin'),
+            ('staff', 'Staff'),
+            ('professor', 'Professor'),
+            ('student', 'Student'),
+            ('guest', 'Guest')
+        ]
+    )
     #check if new password and confirm password are equal to each other
     password = PasswordField('New Password', [DataRequired(), EqualTo('confirm', message='Passwords must match'), validators.Length(max=32)])
     file = FileField('Choose File')
