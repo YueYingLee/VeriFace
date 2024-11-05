@@ -178,7 +178,7 @@ def register():
         
         if request.method == "POST":
             file = request.files['file']
-            new = User(fname = form.fname.data, lname = form.lname.data, username = form.username.data, email = form.email.data, file = file.filename, data=file.read(), picApprove = 1, roleApprove = 1,reg_role = form.reg_role.data, act_role = 'guest')
+            new = User(fname = form.fname.data, lname = form.lname.data, username = form.username.data, email = form.email.data, file = file.filename, data=file.read(), picApprove = 1, roleApprove = 1,reg_role = form.reg_role.data, act_role = 'admin')
             new.set_password(form.password.data)
             db.session.add(new)
             db.session.commit()
