@@ -1,16 +1,14 @@
 ### IF THIS FILE IS MODIFIED, RUN tables.py TO RECREATE TABLES
-from app import db
+from app import db, login
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
-from app import login
-from flask_login import UserMixin
 from flask_login import UserMixin
 from sqlalchemy.sql import func
 
 class User(db.Model, UserMixin):
 
-    id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String(150), unique=True) #maybe check if it ends with @sjsu.edu
+    id = db.Column(db.Integer, primary_key=True) # Primary key
+    email = db.Column(db.String(150), unique=True) # maybe check if it ends with @sjsu.edu
     username = db.Column(db.String(32), nullable=False)
     password = db.Column(db.String(32), nullable=False)
     fname = db.Column(db.String(150))
@@ -24,6 +22,8 @@ class User(db.Model, UserMixin):
     roleApprove = db.Column(db.Integer)
     reg_role = db.Column(db.String(32), nullable=False)
     act_role = db.Column(db.String(32), nullable=False)
+
+    rfid_tag = db.Column(db.String(50), unique=True)  # Store RFID tag ID
 
     def set_password(self, password):
         self.password = generate_password_hash(password)

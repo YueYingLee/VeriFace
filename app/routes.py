@@ -1,22 +1,24 @@
-from flask import render_template
-from flask import redirect, request, url_for
-from flask import flash, send_file, send_from_directory
+from flask import render_template, redirect, request, url_for, flash, send_file, send_from_directory
 from .forms import LoginForm, LogoutForm, HomeForm, RegisterForm, AdminForm, AddEventsForm, ViewEventsForm
 from werkzeug.security import generate_password_hash, check_password_hash
 from .models import User, Event
 
 from app import myapp_obj
-from flask_login import current_user
-from flask_login import login_user
-from flask_login import logout_user
-from flask_login import login_required
+from flask_login import current_user, login_user, logout_user, login_required
 from werkzeug.utils import secure_filename
 from io import BytesIO
 from . import db
 
+import serial # For Serial Communication in Flask
+from datetime import datetime
 
-# # Define allowed files
+# Define allowed files
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
+
+# Define the serial port (adjust as needed)
+SERIAL_PORT = 'COM5'
+BAUD_RATE = 9600
+RFID_reader = serial.Serial(SERIAL_PORT, BAUD_RATE, timeout=1)
 
 @myapp_obj.route("/", methods=['GET', 'POST'])
 @myapp_obj.route("/login", methods=['GET', 'POST'])
@@ -190,3 +192,21 @@ def download(id):
     img = User.query.filter_by(id=id).first()
     return send_file(BytesIO(img.data),
                      download_name=img.file, as_attachment=False) #change to true if want it to be downloaded auto; false rn to display on browser
+
+@myapp_obj.route("/scan_rfid", methods=['GET', 'POST'])
+def scan_rfid():
+    # Read the RFID tag from Arduino
+    tag_id = RFID_reader.readline().decode().strip()  # Read tag and strip whitespace
+    
+    if tag_id:  # If a tag is read
+        # Check if the tag ID exists in the database
+        user = User.query.filter_by(rfid_tag=tag_id).first()
+        if user:
+            # Update attendance records or login status
+            flash(f"Welcome, {user.fname}!")
+            # Optional: Log attendance time or redirect to a dashboard
+            return redirect(url_for("index"))
+        else:
+            flash("RFID tag not recognized.")
+            return redirect(url_for("login"))
+    return render_template("scan_rfid.html")
