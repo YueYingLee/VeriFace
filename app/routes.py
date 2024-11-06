@@ -46,6 +46,8 @@ def login():
         else:
             login_user(user)
             return redirect('/index')
+
+            
     return render_template('login.html', form=form)
 
 @myapp_obj.route("/index", methods=['GET', 'POST'])
