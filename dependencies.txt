@@ -5,6 +5,7 @@ face-recognition==1.3.0
 face-recognition-models==0.3.0
 Flask==2.3.2
 Flask-Login==0.6.2
+flask_moment==1.0.6
 Flask-SQLAlchemy==3.0.3
 Flask-WTF==1.1.1
 greenlet==3.1.0

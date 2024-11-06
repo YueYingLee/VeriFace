@@ -13,6 +13,8 @@ from flask_login import login_required
 from werkzeug.utils import secure_filename
 from io import BytesIO
 from . import db
+from datetime import datetime
+from flask_moment import Moment
 
 
 # # Define allowed files
@@ -178,7 +180,7 @@ def register():
         
         if request.method == "POST":
             file = request.files['file']
-            new = User(fname = form.fname.data, lname = form.lname.data, username = form.username.data, email = form.email.data, file = file.filename, data=file.read(), picApprove = 1, roleApprove = 1,reg_role = form.reg_role.data, act_role = 'admin')
+            new = User(fname = form.fname.data, lname = form.lname.data, username = form.username.data, email = form.email.data, file = file.filename, data=file.read(), picApprove = 1, roleApprove = 1,reg_role = form.reg_role.data, act_role = 'guest')
             new.set_password(form.password.data)
             db.session.add(new)
             db.session.commit()
