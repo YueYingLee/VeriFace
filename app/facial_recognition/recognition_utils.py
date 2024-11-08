@@ -81,4 +81,4 @@ def mark_attendance(user):
             writer.writeheader()
         writer.writerow(row)
 
-        print(f'Marked attendance for {row['Name']}')
+        print(f'Marked attendance for {row["Name"]}')
