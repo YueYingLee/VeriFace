@@ -20,17 +20,33 @@
   </div>
 </nav>
 </br>
+<div class ="container">
+  <div class ="text">
+  <h1>Add New Event</h1>
+  </style>
+  <body>
+  <form action="" method="POST" novalidate>
+      {{form.hidden_tag()}}
+  
+      <p> {{form.eventName.label}} <br>
+         {{form.eventName(size=32)}}
+      {%for error in form.eventName.errors%}
+      <span style="color: red;"> [{{error}}]</span>
+      {% endfor %}
+      </p>
+  
+      <div class="page-header">
+        {{form.date (class= "DateTimeField")}}
+      </div>
 
-<p>{{moment().format('LLL')}}</p>
-
-<div class = "boxing">
-  <p> Welcome {{current_user.username}}!</p>
-</div>
-<h2>Account Info</h2>
-<div class = "text">
-  <p>Username: {{current_user.username}}</p>
-  <p>First Name: {{current_user.fname}}</p>
-  <p>Last Name: {{current_user.lname}}</p>
-  <p>Email: {{current_user.email}}</p>
-</div>
+      <div class="page-header">
+        {{form.time (class= "DateTimeField")}}
+      </div>
+  
+      <p>{{form.submit()}}</p>
+      </div>
+      </div>
+  
+  </form>
+  </body>
 {% endblock %}

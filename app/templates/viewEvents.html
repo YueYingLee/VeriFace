@@ -21,16 +21,23 @@
 </nav>
 </br>
 
-<p>{{moment().format('LLL')}}</p>
-
-<div class = "boxing">
-  <p> Welcome {{current_user.username}}!</p>
-</div>
-<h2>Account Info</h2>
-<div class = "text">
-  <p>Username: {{current_user.username}}</p>
-  <p>First Name: {{current_user.fname}}</p>
-  <p>Last Name: {{current_user.lname}}</p>
-  <p>Email: {{current_user.email}}</p>
-</div>
+<h2>Events </h2>
+<table>
+  <thread>
+    <tr>
+      <th>Name</th>
+      <th>Date </th>
+      <th>Time </th>
+    </tr>
+  </thread>
+  <tbody>
+    {%for events in events%}
+    <tr> 
+      <td> {{events.eventName}}</td>
+      <td>{{events.date}}</td>
+      <td>{{events.time}}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
 {% endblock %}

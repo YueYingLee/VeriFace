@@ -2,8 +2,10 @@ import os
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
+from flask_moment import Moment
 
 myapp_obj = Flask(__name__)
+moment = Moment(myapp_obj)
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 

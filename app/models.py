@@ -34,6 +34,19 @@ class User(db.Model, UserMixin):
     def __repr__(self):
         return f'<user {self.id}: {self.username}>'
 
+class Event(db.Model, UserMixin):
+
+    id = db.Column(db.Integer, primary_key=True)
+    hostId = db.Column(db.Integer, nullable = False)
+    eventName = db.Column(db.String(32), nullable=False)
+    date = db.Column(db.Date, default=datetime.utcnow)
+    time = db.Column(db.Time, default=datetime.utcnow)
+    # time = db.Column(db.DateTime, default=datetime.utcnow)
+    #add one for time of class/event
+
+    def __repr__(self):
+        return f'<user {self.id}>'
+    
 @login.user_loader
 def load_user(id):
     return User.query.get(int(id))
