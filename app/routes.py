@@ -16,9 +16,11 @@ from . import db
 from datetime import datetime
 from flask_moment import Moment
 
-
-# # Define allowed files
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
+import threading
+import cv2
+from .facial_recognition import recognition_utils, recognition_handler
+from . import rfid_handler
+from event_controller import end_event
 
 @myapp_obj.route("/", methods=['GET', 'POST'])
 @myapp_obj.route("/login", methods=['GET', 'POST'])
@@ -180,11 +182,30 @@ def register():
         
         if request.method == "POST":
             file = request.files['file']
-            new = User(fname = form.fname.data, lname = form.lname.data, username = form.username.data, email = form.email.data, file = file.filename, data=file.read(), picApprove = 1, roleApprove = 1,reg_role = form.reg_role.data, act_role = 'guest')
-            new.set_password(form.password.data)
-            db.session.add(new)
-            db.session.commit()
-            return redirect('/')
+
+            # file image must be validated before registering is complete
+            try:
+                encode = recognition_utils.encode_image(file)
+                new = User (
+                    fname = form.fname.data,
+                    lname = form.lname.data,
+                    username = form.username.data,
+                    email = form.email.data,
+                    file = file.filename,
+                    data=encode,
+                    picApprove = 1,
+                    roleApprove = 1,
+                    reg_role = form.reg_role.data,
+                    act_role = 'guest'
+                )
+                new.set_password(form.password.data)
+                db.session.add(new)
+                db.session.commit()
+                return redirect('/')
+
+            except ValueError as e:
+                flash(e)
+
     return render_template('register.html', form=form)
 
 @myapp_obj.route('/download/<int:id>')
@@ -192,3 +213,43 @@ def download(id):
     img = User.query.filter_by(id=id).first()
     return send_file(BytesIO(img.data),
                      download_name=img.file, as_attachment=False) #change to true if want it to be downloaded auto; false rn to display on browser
+
+
+'''
+The idea is:
+    - constantly poll for RFID scans
+    - if nothing is scanned, camera just stays on and does nothing
+    - once there is a scan, stop scanning for any more RFID
+        - check if that ID is registered for this current event
+        - using that ID, start the facial recognition process to only look for the user associated with that ID
+            - if it takes too long, we can make it timeout so they have to scan RFID again (prevents infinite loop if no face matches)
+        - if face verified, mark attendance, and break out of facial recognition function, and go back to polling for RFID scans
+            - camera stays on the whole time until admin quits
+'''
+@myapp_obj.route('/start-attendance/<int:id>')
+def start_attendance(id):
+
+    # initialize camera
+    global cap
+    cap = recognition_utils.initialize_camera()
+    if not cap:
+        return 'Camera initialization failed.'
+
+    # grab a list of all users corresponding to this event
+    users_in_event = User.query.filter_by(events.id=id).all()
+
+    # Initialize and start threads
+    rfid_thread = threading.Thread(target=rfid_handler.poll_rfid, args=(cap, users_in_event,), daemon=True)
+    camera_thread = threading.Thread(target=recognition_utils.display_camera, args=(cap,), daemon=True)
+    
+    rfid_thread.start()
+    camera_thread.start()
+
+    print(f'attendance started for event id: {id}')
+
+
+@myapp_obj.route('/stop-attendance')
+def stop_attendance(id):
+    end_event.set()
+
+    print('attendance process quit')
