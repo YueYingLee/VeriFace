@@ -17,6 +17,7 @@ def start_facial_recognition(cap, target_rfid, users):
 
     # identity will be confirmed when this value is incremented to a certain amount
     confirm_face = 0
+
     name = None
 
     target_user = [user for user in users if user.rfid == target_rfid]
@@ -32,8 +33,7 @@ def start_facial_recognition(cap, target_rfid, users):
         while confirm_face < CONFIRM_FACE:
 
             # Scale down frame to process encodings faster
-            scale_factor = IMAGE_SCALE_FACTOR
-            small_frame = cv2.resize(frame, (0, 0), fx=scale_factor, fy=scale_factor)
+            small_frame = cv2.resize(frame, (0, 0), fx=IMAGE_SCALE_FACTOR, fy=IMAGE_SCALE_FACTOR)
 
             # Only process faces every few frames to improve camera performance
             if frame_count % FRAME_INTERVAL == 0:
@@ -62,7 +62,7 @@ def start_facial_recognition(cap, target_rfid, users):
                     name = 'Unknown'
 
                 # Draw rectangle around the face and label with the name of the identified person
-                multiply_factor = int(1/scale_factor)
+                multiply_factor = int(1/IMAGE_SCALE_FACTOR)
                 top, right, bottom, left = location
                 top *= multiply_factor
                 right *= multiply_factor

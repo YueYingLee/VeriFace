@@ -22,11 +22,11 @@ def poll_rfid(cap, users):
                 # check if this RFID is valid for the event
                 if is_valid_for_event(rfid_data, users):
                     print('Valid RFID for event')
-                    success = start_facial_recognition(cap, rfid_data, users)
+                    verified = start_facial_recognition(cap, rfid_data, users)
 
-                    if success:
+                    if verified:
                         print('Verified user! Marking attendance...')
-                        mark_attendance(success)
+                        mark_attendance(verified)
                     else:
                         print('Face not recognized or timed out. Please rescan RFID and try again.')
 
@@ -34,6 +34,8 @@ def poll_rfid(cap, users):
                     print('RFID is not associated with this event.')
                 
                 rfid_event.set()
+            
+            time.sleep(0.1)
 
     except serial.SerialException as e:
         print(f"Serial Error: {e}")
@@ -43,6 +45,7 @@ def poll_rfid(cap, users):
         print(f"Unexpected Error: {e}")
     finally:
         ser.close()
+        end_event.set()
         print("Serial port closed.")
 
 

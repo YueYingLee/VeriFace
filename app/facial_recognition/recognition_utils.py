@@ -16,6 +16,8 @@ attendance_path = os.path.join(app_path, 'attendance')                          
 supported_extensions = ('.jpg', '.jpeg', '.png')
 
 def encode_image(file):
+
+    # if invalid extension type
     if not file.filename.endswith(supported_extensions):
         raise ValueError(f'Invalid file type! Supported types are {supported_extensions}')
     

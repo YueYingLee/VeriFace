@@ -187,19 +187,20 @@ def download(id):
     return send_file(BytesIO(img.data),
                      download_name=img.file, as_attachment=False) #change to true if want it to be downloaded auto; false rn to display on browser
 
+
+'''
+The idea is:
+    - constantly poll for RFID scans
+    - if nothing is scanned, camera just stays on and does nothing
+    - once there is a scan, stop scanning for any more RFID
+        - check if that ID is registered for this current event
+        - using that ID, start the facial recognition process to only look for the user associated with that ID
+            - if it takes too long, we can make it timeout so they have to scan RFID again (prevents infinite loop if no face matches)
+        - if face verified, mark attendance, and break out of facial recognition function, and go back to polling for RFID scans
+            - camera stays on the whole time until admin quits
+'''
 @myapp_obj.route('/start-attendance/<int:id>')
 def start_attendance(id):
-        '''
-        The idea is:
-            - constantly poll for RFID scans
-            - if nothing is scanned, camera just stays on and does nothing
-            - once there is a scan, stop scanning for any more RFID
-                - check if that ID is registered for this current event
-                - using that ID, start the facial recognition process to only look for the user associated with that ID
-                    - if it takes too long, we can make it timeout so they have to scan RFID again (prevents infinite loop if no face matches)
-                - if face verified, mark attendance, and break out of facial recognition function, and go back to polling for RFID scans
-                    - camera stays on the whole time until admin quits
-        '''
 
     # initialize camera
     global cap
@@ -208,7 +209,7 @@ def start_attendance(id):
         return 'Camera initialization failed.'
 
     # grab a list of all users corresponding to this event
-    users_in_event = User.query.filter_by(event_id=id).all()
+    users_in_event = User.query.filter_by(events.id=id).all()
 
     # Initialize and start threads
     rfid_thread = threading.Thread(target=rfid_handler.poll_rfid, args=(cap, users_in_event,), daemon=True)
@@ -220,6 +221,8 @@ def start_attendance(id):
     print(f'attendance started for event id: {id}')
 
 
-@myapp_obj.route('/start-attendance/<int:id>')
-def start_attendance(id):
+@myapp_obj.route('/stop-attendance')
+def stop_attendance(id):
     end_event.set()
+
+    print('attendance process quit')

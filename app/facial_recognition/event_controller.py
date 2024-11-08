@@ -6,3 +6,4 @@ rfid_event.set()  # Start with RFID scanning enabled
 
 # Event to control when to end attendance
 end_event = Event()
+end_event.clear()   # start with end_event cleared
