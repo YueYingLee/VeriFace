@@ -18,9 +18,7 @@ from flask_moment import Moment
 
 import threading
 import cv2
-from .facial_recognition import recognition_utils, recognition_handler
-from . import rfid_handler
-from event_controller import end_event
+# from .facial_recognition import recognition_utils, recognition_handler, rfid_handler, event_controller
 
 @myapp_obj.route("/", methods=['GET', 'POST'])
 @myapp_obj.route("/login", methods=['GET', 'POST'])
@@ -228,6 +226,7 @@ The idea is:
 '''
 @myapp_obj.route('/start-attendance/<int:id>')
 def start_attendance(id):
+    from .facial_recognition import recognition_utils, recognition_handler, rfid_handler, event_controller
 
     # initialize camera
     global cap
@@ -236,7 +235,7 @@ def start_attendance(id):
         return 'Camera initialization failed.'
 
     # grab a list of all users corresponding to this event
-    users_in_event = User.query.filter_by(events.id=id).all()
+    users_in_event = User.query.filter_by(events.id==id).all()
 
     # Initialize and start threads
     rfid_thread = threading.Thread(target=rfid_handler.poll_rfid, args=(cap, users_in_event,), daemon=True)
@@ -249,7 +248,9 @@ def start_attendance(id):
 
 
 @myapp_obj.route('/stop-attendance')
-def stop_attendance(id):
-    end_event.set()
+def stop_attendance():
+    from .facial_recognition import recognition_utils, recognition_handler, rfid_handler, event_controller
+
+    event_controller.end_event.set()
 
     print('attendance process quit')
