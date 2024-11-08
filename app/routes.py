@@ -15,8 +15,9 @@ from io import BytesIO
 from . import db
 
 import threading
-from .facial_recognition import facial_utils, recognition, start_attendance
-from rfid import poll_rfid
+from .facial_recognition import recognition_utils, recognition_handler
+from . import rfid_handler
+import cv2
 
 @myapp_obj.route("/", methods=['GET', 'POST'])
 @myapp_obj.route("/login", methods=['GET', 'POST'])
@@ -156,7 +157,7 @@ def register():
 
             # file image must be validated before registering is complete
             try:
-                encode = facial_utils.encode_image(file)
+                encode = recognition_utils.encode_image(file)
                 new = User (
                     fname = form.fname.data,
                     lname = form.lname.data,
@@ -185,8 +186,8 @@ def download(id):
     return send_file(BytesIO(img.data),
                      download_name=img.file, as_attachment=False) #change to true if want it to be downloaded auto; false rn to display on browser
 
-@myapp_obj.route('/start-attendance/<int:hostId>')
-def start_attendance(hostId):
+@myapp_obj.route('/start-attendance/<int:id>')
+def start_attendance(id):
     # while True:
         # poll for RFID scans here
         '''
@@ -201,11 +202,20 @@ def start_attendance(hostId):
                     - camera stays on the whole time until admin quits
         '''
 
+    # initialize camera
+    global cap
+    cap = recognition_utils.initialize_camera()
+    if not cap:
+        return 'Camera initialization failed.'
+
+    # grab a list of all users corresponding to this event
+    users_in_event = User.query.filter_by(event_id=id).all()
+
     # Initialize and start threads
-    rfid_thread = threading.Thread(target=poll_rfid, daemon=True)
-    recognition_thread = threading.Thread(target=start_attendance, daemon=True)
+    rfid_thread = threading.Thread(target=rfid_handler.poll_rfid, args=(cap, users_in_event,), daemon=True)
+    camera_thread = threading.Thread(target=recognition_utils.display_camera, args=(cap,), daemon=True)
     
     rfid_thread.start()
-    recognition_thread.start()
+    camera_thread.start()
 
 
