@@ -16,7 +16,7 @@ from . import db
 
 import threading
 import cv2
-from .facial_recognition import recognition_utils, recognition_handler, rfid_handler, event_controller
+# from .facial_recognition import recognition_utils, recognition_handler, rfid_handler, event_controller
 
 @myapp_obj.route("/", methods=['GET', 'POST'])
 @myapp_obj.route("/login", methods=['GET', 'POST'])
@@ -199,6 +199,7 @@ The idea is:
 '''
 @myapp_obj.route('/start-attendance/<int:id>')
 def start_attendance(id):
+    from .facial_recognition import recognition_utils, recognition_handler, rfid_handler, event_controller
 
     # initialize camera
     global cap
@@ -220,7 +221,9 @@ def start_attendance(id):
 
 
 @myapp_obj.route('/stop-attendance')
-def stop_attendance(id):
+def stop_attendance():
+    from .facial_recognition import recognition_utils, recognition_handler, rfid_handler, event_controller
+
     event_controller.end_event.set()
 
     print('attendance process quit')
