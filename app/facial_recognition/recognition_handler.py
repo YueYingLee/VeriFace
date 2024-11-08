@@ -79,11 +79,3 @@ def start_facial_recognition(cap, target_rfid, users):
         cv2.imshow('Camera Feed', frame)
     
     return None
-
-
-def main():
-    pass
-
-
-if __name__ == "__main__":
-    main()
