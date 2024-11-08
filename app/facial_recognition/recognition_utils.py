@@ -7,6 +7,7 @@ import json
 from datetime import datetime
 import csv
 import numpy as np
+from event_controller import end_event
 
 facial_path = os.path.dirname(os.path.abspath(__file__))                            # Path to facial_recognition/
 app_path = os.path.dirname(facial_path)                                             # Path to app/ 

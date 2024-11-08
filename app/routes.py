@@ -15,9 +15,10 @@ from io import BytesIO
 from . import db
 
 import threading
+import cv2
 from .facial_recognition import recognition_utils, recognition_handler
 from . import rfid_handler
-import cv2
+from event_controller import end_event
 
 @myapp_obj.route("/", methods=['GET', 'POST'])
 @myapp_obj.route("/login", methods=['GET', 'POST'])
@@ -188,8 +189,6 @@ def download(id):
 
 @myapp_obj.route('/start-attendance/<int:id>')
 def start_attendance(id):
-    # while True:
-        # poll for RFID scans here
         '''
         The idea is:
             - constantly poll for RFID scans
@@ -218,4 +217,9 @@ def start_attendance(id):
     rfid_thread.start()
     camera_thread.start()
 
+    print(f'attendance started for event id: {id}')
 
+
+@myapp_obj.route('/start-attendance/<int:id>')
+def start_attendance(id):
+    end_event.set()
