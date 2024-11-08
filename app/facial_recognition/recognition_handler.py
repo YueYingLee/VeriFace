@@ -74,7 +74,7 @@ def start_facial_recognition(cap, target_rfid, users):
         if confirm_face >= 10:
             print('face found')
             print('Return to idling camera...')
-            return name
+            return target_user
 
         cv2.imshow('Camera Feed', frame)
     

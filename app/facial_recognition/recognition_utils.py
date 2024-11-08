@@ -64,7 +64,7 @@ def display_camera(cap):
     cv2.destroyAllWindows()
     
 
-def mark_attendance(name):
+def mark_attendance(user):
     current_datetime = datetime.now().strftime("%B %d, %Y %I:%M:%S %p")
     current_date = datetime.now().strftime("%m-%d-%Y")
     filename = os.path.join(attendance_path, current_date) + '.csv'
@@ -72,7 +72,7 @@ def mark_attendance(name):
     with open(filename, 'a') as f:
         fieldnames = ['Name', 'Datetime']
         row = {
-            'Name': name,
+            'Name': f'{user.fname} {user.lname}',
             'Datetime': current_datetime
         }
 
@@ -81,4 +81,4 @@ def mark_attendance(name):
             writer.writeheader()
         writer.writerow(row)
 
-        print(f'Marked attendance for {name}')
+        print(f'Marked attendance for {row['Name']}')
