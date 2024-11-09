@@ -18,7 +18,7 @@ from flask_moment import Moment
 
 import threading
 import cv2
-# from .facial_recognition import recognition_utils, recognition_handler, rfid_handler, event_controller
+from .facial_recognition import recognition_handler, utils
 
 @myapp_obj.route("/", methods=['GET', 'POST'])
 @myapp_obj.route("/login", methods=['GET', 'POST'])
@@ -183,7 +183,7 @@ def register():
 
             # file image must be validated before registering is complete
             try:
-                encode = recognition_utils.encode_image(file)
+                encode = utils.encode_image(file)
                 new = User (
                     fname = form.fname.data,
                     lname = form.lname.data,
@@ -202,7 +202,7 @@ def register():
                 return redirect('/')
 
             except ValueError as e:
-                flash(e)
+                flash(str(e))
 
     return render_template('register.html', form=form)
 
@@ -226,11 +226,10 @@ The idea is:
 '''
 @myapp_obj.route('/start-attendance/<int:id>')
 def start_attendance(id):
-    from .facial_recognition import recognition_utils, recognition_handler, rfid_handler, event_controller
 
     # initialize camera
     global cap
-    cap = recognition_utils.initialize_camera()
+    cap = utils.initialize_camera()
     if not cap:
         return 'Camera initialization failed.'
 
@@ -239,7 +238,7 @@ def start_attendance(id):
 
     # Initialize and start threads
     rfid_thread = threading.Thread(target=rfid_handler.poll_rfid, args=(cap, users_in_event,), daemon=True)
-    camera_thread = threading.Thread(target=recognition_utils.display_camera, args=(cap,), daemon=True)
+    camera_thread = threading.Thread(target=utils.display_camera, args=(cap,), daemon=True)
     
     rfid_thread.start()
     camera_thread.start()
@@ -249,8 +248,6 @@ def start_attendance(id):
 
 @myapp_obj.route('/stop-attendance')
 def stop_attendance():
-    from .facial_recognition import recognition_utils, recognition_handler, rfid_handler, event_controller
-
-    event_controller.end_event.set()
+    utils.end_event.clear()
 
     print('attendance process quit')
