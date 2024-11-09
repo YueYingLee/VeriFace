@@ -4,7 +4,6 @@ from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 from app import login
 from flask_login import UserMixin
-from flask_login import UserMixin
 from sqlalchemy.sql import func
 
 class User(db.Model, UserMixin):
@@ -25,6 +24,10 @@ class User(db.Model, UserMixin):
     reg_role = db.Column(db.String(32), nullable=False)
     act_role = db.Column(db.String(32), nullable=False)
 
+
+    rfid = db.Column(db.String(32), nullable=False, unique=True)
+    events = db.relationship('Event', secondary='user_events', back_populates='users')
+
     def set_password(self, password):
         self.password = generate_password_hash(password)
 
@@ -44,9 +47,17 @@ class Event(db.Model, UserMixin):
     # time = db.Column(db.DateTime, default=datetime.utcnow)
     #add one for time of class/event
 
+    users = db.relationship('User', secondary='user_events', back_populates='events')
+
     def __repr__(self):
         return f'<user {self.id}>'
     
+user_events = db.Table(
+    'user_events',
+    db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
+    db.Column('event_id', db.Integer, db.ForeignKey('event.id'))
+)
+
 @login.user_loader
 def load_user(id):
     return User.query.get(int(id))

@@ -15,10 +15,11 @@ from io import BytesIO
 from . import db
 from datetime import datetime
 from flask_moment import Moment
+from flask import Response
 
 import threading
 import cv2
-from .facial_recognition import recognition_handler, utils
+from .facial_recognition import utils
 
 @myapp_obj.route("/", methods=['GET', 'POST'])
 @myapp_obj.route("/login", methods=['GET', 'POST'])
@@ -226,28 +227,23 @@ The idea is:
 '''
 @myapp_obj.route('/start-attendance/<int:id>')
 def start_attendance(id):
-
-    # initialize camera
-    global cap
     cap = utils.initialize_camera()
-    if not cap:
-        return 'Camera initialization failed.'
-
-    # grab a list of all users corresponding to this event
-    users_in_event = User.query.filter_by(events.id==id).all()
+    users_in_event = User.query.filter(User.events.any(id=id)).all()
 
     # Initialize and start threads
-    rfid_thread = threading.Thread(target=rfid_handler.poll_rfid, args=(cap, users_in_event,), daemon=True)
     camera_thread = threading.Thread(target=utils.display_camera, args=(cap,), daemon=True)
+    rfid_thread = threading.Thread(target=utils.poll_rfid, args=(users_in_event, cap,), daemon=True)
     
-    rfid_thread.start()
     camera_thread.start()
+    rfid_thread.start()
 
-    print(f'attendance started for event id: {id}')
+    return Response(utils.display_camera(cap),
+                    mimetype='multipart/x-mixed-replace; boundary=frame')
+
 
 
 @myapp_obj.route('/stop-attendance')
 def stop_attendance():
-    utils.end_event.clear()
+    utils.end_event.set()
 
-    print('attendance process quit')
+    return 'attendance process quit'

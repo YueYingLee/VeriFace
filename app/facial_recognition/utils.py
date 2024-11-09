@@ -10,6 +10,8 @@ import numpy as np
 import serial
 import serial.tools.list_ports
 from threading import Event
+from . import recognition_handler
+import time
 
 facial_path = os.path.dirname(os.path.abspath(__file__))                            # Path to facial_recognition/
 app_path = os.path.dirname(facial_path)                                             # Path to app/ 
@@ -59,55 +61,59 @@ def initialize_camera():
     return cap
 
 def display_camera(cap):
-    while not end_event.is_set():
+    while True:
         ret, frame = cap.read()
         if not ret:
             break
             
         # Mirrored camera
         frame = cv2.flip(frame, 1)
-        cv2.imshow('Camera Feed', frame)
+        ret, buffer = cv2.imencode('.jpg', frame)
+        frame_bytes = buffer.tobytes()
+        yield (b'--frame\r\n'
+                b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
 
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 
     cap.release()
-    cv2.destroyAllWindows()
     
 
+def poll_rfid(users, cap):
+    connect_serial()
 
-def poll_rfid(cap, users):
+    while not end_event.is_set():
+        rfid_event.wait()  # Only proceed if rfid_event is set
+
+        if ser.in_waiting > 0:
+            rfid_data = ser.readline().decode('utf-8').strip()
+            print(f"RFID Tag: {rfid_data}")
+            rfid_event.clear()
+
+            # check if this RFID is valid for the event
+            if is_valid_for_event(rfid_data, users):
+                print('Valid RFID for event')
+                verified = recognition_handler.start_facial_recognition(cap, rfid_data, users)
+
+                if verified:
+                    print('Verified user! Marking attendance...')
+                    mark_attendance(verified)
+                else:
+                    print('Face not recognized or timed out. Please rescan RFID and try again.')
+
+            else:
+                print('RFID is not associated with this event.')
+            
+            rfid_event.set()
+            
+        time.sleep(0.1)
+
+
+def connect_serial():
     try:
         ser = serial.Serial('/dev/tty.usbserial-1410', 9600, timeout=1) # make it dynamically choose the serial port depending on the OS
         time.sleep(2)  # Allow time for the connection to establish
         print(f"Connected to /dev/tty.usbserial-1410")
-
-        while not end_event.is_set():
-            rfid_event.wait()
-            # rfid_event.wait()  # Only proceed if rfid_event is set
-
-            if ser.in_waiting > 0:
-                rfid_data = ser.readline().decode('utf-8').strip()
-                print(f"RFID Tag: {rfid_data}")
-                rfid_event.clear()
-
-                # check if this RFID is valid for the event
-                if is_valid_for_event(rfid_data, users):
-                    print('Valid RFID for event')
-                    verified = start_facial_recognition(cap, rfid_data, users)
-
-                    if verified:
-                        print('Verified user! Marking attendance...')
-                        mark_attendance(verified)
-                    else:
-                        print('Face not recognized or timed out. Please rescan RFID and try again.')
-
-                else:
-                    print('RFID is not associated with this event.')
-                
-                rfid_event.set()
-            
-            time.sleep(0.1)
 
     except serial.SerialException as e:
         print(f"Serial Error: {e}")
@@ -119,7 +125,6 @@ def poll_rfid(cap, users):
         ser.close()
         end_event.set()
         print("Serial port closed.")
-
 
 def is_valid_for_event(rfid_data, users):
     rfid_list = [user.rfid for user in users]
