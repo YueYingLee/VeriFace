@@ -91,7 +91,7 @@ def viewEvents():
         flash("You aren't logged in yet!")
         return redirect('/')
     form = ViewEventsForm()
-    events = Event.query.filter_by() 
+    events = Event.query.filter_by(host_id=current_user.id) 
     return render_template('viewEvents.html', form = form , events = events)
 
 @myapp_obj.route("/ApprovePicture/<int:id>")
@@ -194,7 +194,7 @@ def register():
                     picApprove = 1,
                     roleApprove = 1,
                     reg_role = form.reg_role.data,
-                    act_role = 'guest'
+                    act_role = 'admin'
                 )
                 new.set_password(form.password.data)
                 db.session.add(new)
