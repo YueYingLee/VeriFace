@@ -91,7 +91,7 @@ def viewEvents():
         flash("You aren't logged in yet!")
         return redirect('/')
     form = ViewEventsForm()
-    events = Event.query.filter_by(host_id=current_user.id) 
+    events = Event.query.filter_by(hostId=current_user.id) 
     return render_template('viewEvents.html', form = form , events = events)
 
 @myapp_obj.route("/ApprovePicture/<int:id>")
@@ -125,6 +125,7 @@ def ApproveUser(id):
     else: 
          user = User.query.get(id)
          user.roleApprove=0 
+         user.act_role=user.reg_role
          db.session.commit()
          return redirect("/index")
 
@@ -181,28 +182,34 @@ def register():
         if request.method == "POST":
             file = request.files['file']
 
-            # file image must be validated before registering is complete
-            try:
-                encode = recognition_utils.encode_image(file)
-                new = User (
-                    fname = form.fname.data,
-                    lname = form.lname.data,
-                    username = form.username.data,
-                    email = form.email.data,
-                    file = file.filename,
-                    data=encode,
-                    picApprove = 1,
-                    roleApprove = 1,
-                    reg_role = form.reg_role.data,
-                    act_role = 'admin'
-                )
-                new.set_password(form.password.data)
-                db.session.add(new)
-                db.session.commit()
-                return redirect('/')
+            new = User(fname = form.fname.data, lname = form.lname.data, username = form.username.data, email = form.email.data, file = file.filename, data=file.read(), picApprove = 1, roleApprove = 1,reg_role = form.reg_role.data, act_role = 'guest')
+            new.set_password(form.password.data)
+            db.session.add(new)
+            db.session.commit()
+            return redirect('/')
+        
+            # # file image must be validated before registering is complete
+            # try:
+            #     encode = recognition_utils.encode_image(file)
+            #     new = User (
+            #         fname = form.fname.data,
+            #         lname = form.lname.data,
+            #         username = form.username.data,
+            #         email = form.email.data,
+            #         file = file.filename,
+            #         data=encode,
+            #         picApprove = 1,
+            #         roleApprove = 1,
+            #         reg_role = form.reg_role.data,
+            #         act_role = 'admin'
+            #     )
+            #     new.set_password(form.password.data)
+            #     db.session.add(new)
+            #     db.session.commit()
+            #     return redirect('/')
 
-            except ValueError as e:
-                flash(e)
+            # except ValueError as e:
+            #     flash(e)
 
     return render_template('register.html', form=form)
 

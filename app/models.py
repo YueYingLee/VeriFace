@@ -25,6 +25,8 @@ class User(db.Model, UserMixin):
     reg_role = db.Column(db.String(32), nullable=False)
     act_role = db.Column(db.String(32), nullable=False)
 
+    events = db.relationship('Event', backref='user')
+
     def set_password(self, password):
         self.password = generate_password_hash(password)
 
@@ -37,7 +39,7 @@ class User(db.Model, UserMixin):
 class Event(db.Model, UserMixin):
 
     id = db.Column(db.Integer, primary_key=True)
-    hostId = db.Column(db.Integer, nullable = False)
+    hostId = db.Column(db.Integer, db.ForeignKey('user.id'), nullable = False)
     eventName = db.Column(db.String(32), nullable=False)
     date = db.Column(db.Date, default=datetime.utcnow)
     time = db.Column(db.Time, default=datetime.utcnow)
