@@ -3,7 +3,7 @@ from flask import redirect, request, url_for
 from flask import flash, send_file, send_from_directory
 from .forms import LoginForm, LogoutForm, HomeForm, RegisterForm, AdminForm, AddEventsForm, ViewEventsForm
 from werkzeug.security import generate_password_hash, check_password_hash
-from .models import User, Event
+from .models import User, Event, Attendance
 
 from app import myapp_obj
 from flask_login import current_user
@@ -59,6 +59,10 @@ def index():
         return redirect('/admin')
     if current_user.act_role == 'professor' or current_user.act_role == 'staff':
         return redirect('/addEvents')
+    if current_user.act_role == 'student':
+        attendance = Attendance(eventID=1, userID=current_user.id, status='present')
+        db.session.add(attendance)
+        db.session.commit()
     form = HomeForm()
     return render_template('index.html', form = form)
 

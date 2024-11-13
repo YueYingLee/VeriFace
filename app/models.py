@@ -26,6 +26,7 @@ class User(db.Model, UserMixin):
     act_role = db.Column(db.String(32), nullable=False)
 
     events = db.relationship('Event', backref='user')
+    students = db.relationship('Attendance', backref='user')
 
     def set_password(self, password):
         self.password = generate_password_hash(password)
@@ -43,11 +44,24 @@ class Event(db.Model, UserMixin):
     eventName = db.Column(db.String(32), nullable=False)
     date = db.Column(db.Date, default=datetime.utcnow)
     time = db.Column(db.Time, default=datetime.utcnow)
+
+    attendances = db.relationship('Attendance', backref='event')
     # time = db.Column(db.DateTime, default=datetime.utcnow)
     #add one for time of class/event
 
     def __repr__(self):
         return f'<user {self.id}>'
+    
+class Attendance(db.Model, UserMixin):
+
+    id = db.Column(db.Integer, primary_key=True)
+    eventID = db.Column(db.Integer, db.ForeignKey('event.id'), nullable=False)
+    userID = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    status = db.Column(db.String(50), nullable=False)  # "present" or "absent"
+    # timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def __repr__(self):
+        return f'<attendance {self.id}>'
     
 @login.user_loader
 def load_user(id):
