@@ -1,9 +1,9 @@
 from flask import render_template
 from flask import redirect, request, url_for
 from flask import flash, send_file, send_from_directory
-from .forms import LoginForm, LogoutForm, HomeForm, RegisterForm, AdminForm, AddEventsForm, ViewEventsForm
+from .forms import LoginForm, LogoutForm, HomeForm, RegisterForm, AdminForm, AddEventsForm, ViewEventsForm, AttendanceForm, viewAttendanceForm
 from werkzeug.security import generate_password_hash, check_password_hash
-from .models import User, Event
+from .models import User, Event, Attendance
 
 from app import myapp_obj
 from flask_login import current_user
@@ -57,8 +57,15 @@ def index():
         return redirect('/')
     if current_user.act_role == 'admin':
         return redirect('/admin')
-    if current_user.act_role == 'professor' or current_user.act_role == 'staff':
-        return redirect('/addEvents')
+    # if current_user.act_role == 'professor' or current_user.act_role == 'staff':
+    #     return redirect('/addEvents')
+
+    # made it so when student logs in they auto get checked into event 1 --> for testing and causes duplicates 
+    # so when we do actual attendance we need to query and make sure user has not registered for event and then add to db, if they already in event then dont add/do anything
+    if current_user.act_role == 'student':
+        attendance = Attendance(eventID=1, userID=current_user.id, status='present')
+        db.session.add(attendance)
+        db.session.commit()
     form = HomeForm()
     return render_template('index.html', form = form)
 
@@ -91,8 +98,36 @@ def viewEvents():
         flash("You aren't logged in yet!")
         return redirect('/')
     form = ViewEventsForm()
-    events = Event.query.filter_by() 
+    events = Event.query.filter_by(hostId=current_user.id) 
     return render_template('viewEvents.html', form = form , events = events)
+
+@myapp_obj.route("/attendance/<int:id>", methods=['GET', 'POST'])
+def attendance(id):
+    # if not current_user.is_authenticated: 
+    #     flash("You aren't logged in yet!")
+    #     return redirect('/')
+    # event = Event.query.get(id) 
+    # return redirect('/start/<int:id>', event = event)
+    if not current_user.is_authenticated: 
+        flash("You aren't logged in yet!")
+        return redirect('/')
+    form = AttendanceForm()
+    event = Event.query.get(id) 
+    return render_template('attendance.html', form = form, event = event)
+
+@myapp_obj.route("/viewAttendance/<int:id>", methods=['GET', 'POST'])
+def viewAttendance(id):
+    if not current_user.is_authenticated: 
+        flash("You aren't logged in yet!")
+        return redirect('/')
+    form = viewAttendanceForm()
+    event = Event.query.get(id)
+    # a = Attendance.query.filter_by(eventID = event.id) for getting attendance times when user gets scanned
+    attendances = Attendance.query.filter_by(eventID=event.id).all() 
+
+    users = [User.query.get(attendance.userID) for attendance in attendances] 
+    
+    return render_template('viewAttendance.html', form = form, users = users)
 
 @myapp_obj.route("/ApprovePicture/<int:id>")
 def ApprovePicture(id): #get user id of the user is getting approved
@@ -125,6 +160,7 @@ def ApproveUser(id):
     else: 
          user = User.query.get(id)
          user.roleApprove=0 
+         user.act_role=user.reg_role
          db.session.commit()
          return redirect("/index")
 
@@ -181,28 +217,34 @@ def register():
         if request.method == "POST":
             file = request.files['file']
 
-            # file image must be validated before registering is complete
-            try:
-                encode = recognition_utils.encode_image(file)
-                new = User (
-                    fname = form.fname.data,
-                    lname = form.lname.data,
-                    username = form.username.data,
-                    email = form.email.data,
-                    file = file.filename,
-                    data=encode,
-                    picApprove = 1,
-                    roleApprove = 1,
-                    reg_role = form.reg_role.data,
-                    act_role = 'guest'
-                )
-                new.set_password(form.password.data)
-                db.session.add(new)
-                db.session.commit()
-                return redirect('/')
+            new = User(fname = form.fname.data, lname = form.lname.data, username = form.username.data, email = form.email.data, file = file.filename, data=file.read(), picApprove = 1, roleApprove = 1,reg_role = form.reg_role.data, act_role = 'guest')
+            new.set_password(form.password.data)
+            db.session.add(new)
+            db.session.commit()
+            return redirect('/')
+        
+            # # file image must be validated before registering is complete
+            # try:
+            #     encode = recognition_utils.encode_image(file)
+            #     new = User (
+            #         fname = form.fname.data,
+            #         lname = form.lname.data,
+            #         username = form.username.data,
+            #         email = form.email.data,
+            #         file = file.filename,
+            #         data=encode,
+            #         picApprove = 1,
+            #         roleApprove = 1,
+            #         reg_role = form.reg_role.data,
+            #         act_role = 'admin'
+            #     )
+            #     new.set_password(form.password.data)
+            #     db.session.add(new)
+            #     db.session.commit()
+            #     return redirect('/')
 
-            except ValueError as e:
-                flash(e)
+            # except ValueError as e:
+            #     flash(e)
 
     return render_template('register.html', form=form)
 
