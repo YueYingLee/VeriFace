@@ -1,7 +1,7 @@
 from flask import render_template
 from flask import redirect, request, url_for
 from flask import flash, send_file, send_from_directory
-from .forms import LoginForm, LogoutForm, HomeForm, RegisterForm, AdminForm, AddEventsForm, ViewEventsForm
+from .forms import LoginForm, LogoutForm, HomeForm, RegisterForm, AdminForm, AddEventsForm, ViewEventsForm, AttendanceForm
 from werkzeug.security import generate_password_hash, check_password_hash
 from .models import User, Event, Attendance
 
@@ -57,8 +57,8 @@ def index():
         return redirect('/')
     if current_user.act_role == 'admin':
         return redirect('/admin')
-    if current_user.act_role == 'professor' or current_user.act_role == 'staff':
-        return redirect('/addEvents')
+    # if current_user.act_role == 'professor' or current_user.act_role == 'staff':
+    #     return redirect('/addEvents')
     if current_user.act_role == 'student':
         attendance = Attendance(eventID=1, userID=current_user.id, status='present')
         db.session.add(attendance)
@@ -97,6 +97,29 @@ def viewEvents():
     form = ViewEventsForm()
     events = Event.query.filter_by(hostId=current_user.id) 
     return render_template('viewEvents.html', form = form , events = events)
+
+@myapp_obj.route("/attendance/<int:id>", methods=['GET', 'POST'])
+def attendance(id):
+    # if not current_user.is_authenticated: 
+    #     flash("You aren't logged in yet!")
+    #     return redirect('/')
+    # event = Event.query.get(id) 
+    # return redirect('/start/<int:id>', event = event)
+    if not current_user.is_authenticated: 
+        flash("You aren't logged in yet!")
+        return redirect('/')
+    form = AttendanceForm()
+    event = Event.query.get(id) 
+    return render_template('attendance.html', form = form, event = event)
+
+# @myapp_obj.route("/start/<int:id>", methods=['GET', 'POST'])
+# def start(id):
+#     if not current_user.is_authenticated: 
+#         flash("You aren't logged in yet!")
+#         return redirect('/')
+#     form = AttendanceForm()
+#     event = Event.query.get(id) 
+#     return render_template('attendance.html', form = form, event = event)
 
 @myapp_obj.route("/ApprovePicture/<int:id>")
 def ApprovePicture(id): #get user id of the user is getting approved
