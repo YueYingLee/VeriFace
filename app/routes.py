@@ -1,7 +1,7 @@
 from flask import render_template
 from flask import redirect, request, url_for
 from flask import flash, send_file, send_from_directory
-from .forms import LoginForm, LogoutForm, HomeForm, RegisterForm, AdminForm, AddEventsForm, ViewEventsForm, AttendanceForm
+from .forms import LoginForm, LogoutForm, HomeForm, RegisterForm, AdminForm, AddEventsForm, ViewEventsForm, AttendanceForm, viewAttendanceForm
 from werkzeug.security import generate_password_hash, check_password_hash
 from .models import User, Event, Attendance
 
@@ -59,6 +59,9 @@ def index():
         return redirect('/admin')
     # if current_user.act_role == 'professor' or current_user.act_role == 'staff':
     #     return redirect('/addEvents')
+
+    # made it so when student logs in they auto get checked into event 1 --> for testing and causes duplicates 
+    # so when we do actual attendance we need to query and make sure user has not registered for event and then add to db, if they already in event then dont add/do anything
     if current_user.act_role == 'student':
         attendance = Attendance(eventID=1, userID=current_user.id, status='present')
         db.session.add(attendance)
@@ -112,14 +115,19 @@ def attendance(id):
     event = Event.query.get(id) 
     return render_template('attendance.html', form = form, event = event)
 
-# @myapp_obj.route("/start/<int:id>", methods=['GET', 'POST'])
-# def start(id):
-#     if not current_user.is_authenticated: 
-#         flash("You aren't logged in yet!")
-#         return redirect('/')
-#     form = AttendanceForm()
-#     event = Event.query.get(id) 
-#     return render_template('attendance.html', form = form, event = event)
+@myapp_obj.route("/viewAttendance/<int:id>", methods=['GET', 'POST'])
+def viewAttendance(id):
+    if not current_user.is_authenticated: 
+        flash("You aren't logged in yet!")
+        return redirect('/')
+    form = viewAttendanceForm()
+    event = Event.query.get(id)
+    # a = Attendance.query.filter_by(eventID = event.id) for getting attendance times when user gets scanned
+    attendances = Attendance.query.filter_by(eventID=event.id).all() 
+
+    users = [User.query.get(attendance.userID) for attendance in attendances] 
+    
+    return render_template('viewAttendance.html', form = form, users = users)
 
 @myapp_obj.route("/ApprovePicture/<int:id>")
 def ApprovePicture(id): #get user id of the user is getting approved
