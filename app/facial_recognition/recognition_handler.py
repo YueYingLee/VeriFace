@@ -10,6 +10,19 @@ FRAME_INTERVAL = 2              # run encoding algorithm in intervals to prevent
 IMAGE_SCALE_FACTOR = 0.33       # scale image down by this factor to improve encoding performance
 TIMEOUT_SECONDS = 10            # timeout in seconds to prevent infinite scanning
 
+
+'''
+Start facial recognition for the scanned RFID
+Times out after 10 seconds if no face is identified, and goes back to scanning RFID
+
+Parameters:
+    - cap: instance of OpenCV video capture
+    - target_rfid: the scanned RFID
+    - users: a list of all users that are part of the event
+
+Returns:
+    - target_user[0]: the identified user, else return None
+'''
 def start_facial_recognition(cap, target_rfid, users):
     frame_count = 0
     confirm_face = 0

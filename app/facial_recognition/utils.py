@@ -60,6 +60,7 @@ def initialize_camera():
         return None
     return cap
 
+
 def display_camera(cap):
     while True:
         ret, frame = cap.read()
@@ -79,8 +80,15 @@ def display_camera(cap):
     cap.release()
     
 
+'''
+Scan for RFID tag
+
+Parameters:
+    - users: a list of all users that are part of the event
+    - cap: instance of OpenCV video capture
+'''
 def poll_rfid(users, cap):
-    connect_serial()
+    ser = connect_serial()
 
     while not end_event.is_set():
         rfid_event.wait()  # Only proceed if rfid_event is set
@@ -93,11 +101,11 @@ def poll_rfid(users, cap):
             # check if this RFID is valid for the event
             if is_valid_for_event(rfid_data, users):
                 print('Valid RFID for event')
-                verified = recognition_handler.start_facial_recognition(cap, rfid_data, users)
+                verified_user = recognition_handler.start_facial_recognition(cap, rfid_data, users)
 
-                if verified:
+                if verified_user:
                     print('Verified user! Marking attendance...')
-                    mark_attendance(verified)
+                    mark_attendance(verified_user)
                 else:
                     print('Face not recognized or timed out. Please rescan RFID and try again.')
 
@@ -109,11 +117,18 @@ def poll_rfid(users, cap):
         time.sleep(0.1)
 
 
+'''
+Attempt to make serial connection
+
+Returns:
+    - ser: serial port connection
+'''
 def connect_serial():
     try:
         ser = serial.Serial('/dev/tty.usbserial-1410', 9600, timeout=1) # make it dynamically choose the serial port depending on the OS
         time.sleep(2)  # Allow time for the connection to establish
         print(f"Connected to /dev/tty.usbserial-1410")
+        return ser
 
     except serial.SerialException as e:
         print(f"Serial Error: {e}")
@@ -126,6 +141,17 @@ def connect_serial():
         end_event.set()
         print("Serial port closed.")
 
+
+'''
+Verify if the scanned RFID is part of the event
+
+Parameters:
+    - rfid_data: the scanned RFID
+    - users: a list of all users that are part of the event
+
+Returns:
+    - TRUE if user is in event, else FALSE
+'''
 def is_valid_for_event(rfid_data, users):
     rfid_list = [user.rfid for user in users]
     return rfid_data in rfid_list
