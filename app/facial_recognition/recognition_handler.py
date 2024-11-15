@@ -81,8 +81,6 @@ def start_facial_recognition(target_rfid, users):
         
         frame_count += 1
 
-    face_location = None
-
     if (confirm_face >= CONFIRM_FACE):
         return target_user[0]
     else:

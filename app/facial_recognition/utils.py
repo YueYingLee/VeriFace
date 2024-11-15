@@ -79,7 +79,6 @@ Parameters:
 '''
 def poll_rfid(users):
     ser = connect_serial()
-    time.sleep(1)
 
     while not end_event.is_set():
 
