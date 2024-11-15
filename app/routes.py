@@ -19,7 +19,8 @@ from flask import Response
 
 import threading
 import cv2
-from .facial_recognition import utils
+from .facial_recognition.utils import poll_rfid, display_camera, encode_image
+from .facial_recognition.global_vars import end_event
 
 @myapp_obj.route("/", methods=['GET', 'POST'])
 @myapp_obj.route("/login", methods=['GET', 'POST'])
@@ -184,7 +185,7 @@ def register():
 
             # file image must be validated before registering is complete
             try:
-                encode = utils.encode_image(file)
+                encode = encode_image(file)
                 new = User (
                     fname = form.fname.data,
                     lname = form.lname.data,
@@ -227,23 +228,21 @@ The idea is:
 '''
 @myapp_obj.route('/start-attendance/<int:id>')
 def start_attendance(id):
-    cap = utils.initialize_camera()
     users_in_event = User.query.filter(User.events.any(id=id)).all()
 
     # Initialize and start threads
-    camera_thread = threading.Thread(target=utils.display_camera, args=(cap,), daemon=True)
-    rfid_thread = threading.Thread(target=utils.poll_rfid, args=(users_in_event, cap,), daemon=True)
+    camera_thread = threading.Thread(target=display_camera, daemon=True)
+    rfid_thread = threading.Thread(target=poll_rfid, args=(users_in_event,), daemon=True)
     
     camera_thread.start()
     rfid_thread.start()
 
-    return Response(utils.display_camera(cap),
+    return Response(display_camera(),
                     mimetype='multipart/x-mixed-replace; boundary=frame')
 
 
 
 @myapp_obj.route('/stop-attendance')
 def stop_attendance():
-    utils.end_event.set()
-
-    return 'attendance process quit'
+    end_event.set()
+    return redirect('/viewEvents')

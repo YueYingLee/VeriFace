@@ -9,25 +9,15 @@ import csv
 import numpy as np
 import serial
 import serial.tools.list_ports
-from threading import Event
 from . import recognition_handler
 import time
+from .global_vars import frame_queue, end_event
 
 facial_path = os.path.dirname(os.path.abspath(__file__))                            # Path to facial_recognition/
 app_path = os.path.dirname(facial_path)                                             # Path to app/ 
 attendance_path = os.path.join(app_path, 'attendance')                              # Path to attendance/
 
 supported_extensions = ('.jpg', '.jpeg', '.png')
-
-
-# Event to control RFID polling and facial recognition
-rfid_event = Event()
-rfid_event.set()  # Start with RFID scanning enabled
-
-# Event to control when to end attendance
-end_event = Event()
-end_event.clear()   # start with end_event cleared
-
 
 def encode_image(file):
     # if invalid extension type
@@ -53,15 +43,9 @@ def encode_image(file):
     return face_encodings[0]
 
 
-def initialize_camera():
+def display_camera():
     cap = cv2.VideoCapture(0)
-    if not cap.isOpened():
-        print("Error: Could not open camera.")
-        return None
-    return cap
 
-
-def display_camera(cap):
     while True:
         ret, frame = cap.read()
         if not ret:
@@ -69,6 +53,12 @@ def display_camera(cap):
             
         # Mirrored camera
         frame = cv2.flip(frame, 1)
+
+        # Add frame to queue to be accessed globally
+        if not frame_queue.full():
+            frame_queue.put(frame)
+
+        # Convert frame to bytes to be displayed on webpage
         ret, buffer = cv2.imencode('.jpg', frame)
         frame_bytes = buffer.tobytes()
         yield (b'--frame\r\n'
@@ -87,21 +77,20 @@ Parameters:
     - users: a list of all users that are part of the event
     - cap: instance of OpenCV video capture
 '''
-def poll_rfid(users, cap):
+def poll_rfid(users):
     ser = connect_serial()
+    time.sleep(1)
 
     while not end_event.is_set():
-        rfid_event.wait()  # Only proceed if rfid_event is set
 
         if ser.in_waiting > 0:
             rfid_data = ser.readline().decode('utf-8').strip()
             print(f"RFID Tag: {rfid_data}")
-            rfid_event.clear()
 
             # check if this RFID is valid for the event
             if is_valid_for_event(rfid_data, users):
                 print('Valid RFID for event')
-                verified_user = recognition_handler.start_facial_recognition(cap, rfid_data, users)
+                verified_user = recognition_handler.start_facial_recognition(rfid_data, users)
 
                 if verified_user:
                     print('Verified user! Marking attendance...')
@@ -111,9 +100,8 @@ def poll_rfid(users, cap):
 
             else:
                 print('RFID is not associated with this event.')
-            
-            rfid_event.set()
-            
+        
+        ser.reset_input_buffer()
         time.sleep(0.1)
 
 
@@ -125,7 +113,7 @@ Returns:
 '''
 def connect_serial():
     try:
-        ser = serial.Serial('/dev/tty.usbserial-1410', 9600, timeout=1) # make it dynamically choose the serial port depending on the OS
+        ser = serial.Serial('/dev/tty.usbmodem14101', 9600, timeout=1) # make it dynamically choose the serial port depending on the OS
         time.sleep(2)  # Allow time for the connection to establish
         print(f"Connected to /dev/tty.usbserial-1410")
         return ser
@@ -136,10 +124,10 @@ def connect_serial():
         print(f"Permission Error: {e}")
     except Exception as e:
         print(f"Unexpected Error: {e}")
-    finally:
-        ser.close()
-        end_event.set()
-        print("Serial port closed.")
+    # finally:
+    #     ser.close()
+    #     end_event.set()
+    #     print("Serial port closed.")
 
 
 '''

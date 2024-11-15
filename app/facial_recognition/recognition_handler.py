@@ -3,9 +3,10 @@ import cv2
 import face_recognition as fr
 import numpy as np
 import time
+from .global_vars import frame_queue
 
 RECOGNITION_THRESHOLD = 0.5     # if the difference in comparision is under this threshold --> face is a match
-CONFIRM_FACE = 10               # must verify face for this many frames prevent a false match
+CONFIRM_FACE = 8               # must verify face for this many frames prevent a false match
 FRAME_INTERVAL = 2              # run encoding algorithm in intervals to prevent camera lag
 IMAGE_SCALE_FACTOR = 0.33       # scale image down by this factor to improve encoding performance
 TIMEOUT_SECONDS = 10            # timeout in seconds to prevent infinite scanning
@@ -23,7 +24,7 @@ Parameters:
 Returns:
     - target_user[0]: the identified user, else return None
 '''
-def start_facial_recognition(cap, target_rfid, users):
+def start_facial_recognition(target_rfid, users):
     frame_count = 0
     confirm_face = 0
     name = None
@@ -31,10 +32,15 @@ def start_facial_recognition(cap, target_rfid, users):
     timeout = time.time() + TIMEOUT_SECONDS
     print("Starting facial recognition...")
 
+    # Start off with a blank queue
+    with frame_queue.mutex:
+        frame_queue.queue.clear()
+
     while time.time() < timeout:
-        ret, frame = cap.read()
-        if not ret:
-            break
+        if not frame_queue.empty():
+            frame = frame_queue.get()
+        else:
+            continue
 
         # Scale down frame for faster processing
         small_frame = cv2.resize(frame, (0, 0), fx=IMAGE_SCALE_FACTOR, fy=IMAGE_SCALE_FACTOR)
@@ -47,13 +53,14 @@ def start_facial_recognition(cap, target_rfid, users):
                 continue
             
             if confirm_face == CONFIRM_FACE:
-                print('face confirmed')
                 break
 
             face_encoded = fr.face_encodings(small_frame, face_location)
             for encoded, location in zip(face_encoded, face_location):
                 matches = fr.compare_faces([np.frombuffer(target_user[0].data, dtype=np.float64)], encoded, RECOGNITION_THRESHOLD)
                 face_distances = fr.face_distance([np.frombuffer(target_user[0].data, dtype=np.float64)], encoded)
+
+                print(face_distances)
                 
                 name = 'Unknown'
                 if matches[0]:
@@ -74,7 +81,10 @@ def start_facial_recognition(cap, target_rfid, users):
         
         frame_count += 1
 
+    face_location = None
+
     if (confirm_face >= CONFIRM_FACE):
         return target_user[0]
     else:
+        print('no faces scanned')
         return None
