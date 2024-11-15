@@ -1,15 +1,11 @@
-from flask import render_template
-from flask import redirect, request, url_for
+from flask import render_template, redirect, request, url_for
 from flask import flash, send_file, send_from_directory
 from .forms import LoginForm, LogoutForm, HomeForm, RegisterForm, AdminForm, AddEventsForm, ViewEventsForm
 from werkzeug.security import generate_password_hash, check_password_hash
 from .models import User, Event
 
 from app import myapp_obj
-from flask_login import current_user
-from flask_login import login_user
-from flask_login import logout_user
-from flask_login import login_required
+from flask_login import current_user, login_user, logout_user, login_required
 from werkzeug.utils import secure_filename
 from io import BytesIO
 from . import db

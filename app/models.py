@@ -1,4 +1,4 @@
-### IF THIS FILE IS MODIFIED, RUN tables.py TO RECREATE TABLES
+### IF THIS FILE IS MODIFIED, RUN reset_db.py TO RECREATE TABLES
 from app import db
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
