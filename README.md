@@ -20,7 +20,7 @@ The goal that we set for this project is to create a simple, reliable, and secur
 - Rodrigo Chen
 - YueYing Lee
 - Natalie Leung
-- Kenneth Nyugen
+- Kenneth Nguyen
 
 ## Usage
 
