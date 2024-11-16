@@ -41,7 +41,7 @@ To set up the hardware for the RFID system:
 1. Connect the MFRC522 RFID Module to the Arduino Board. [Refer to this datasheet link](https://www.nxp.com/docs/en/data-sheet/MFRC522.pdf)
 2. Upload Code to the Arduino.
 3. Verify Connections.
-4. Connect the Arduino to the your computer bia USB cable
+4. Connect the Arduino to the your computer via USB cable
 5. Test RFID reader by running the following Python script:  ``python3 rfid_read.py``
 
 ### Python 3 Installation
