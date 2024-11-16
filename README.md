@@ -8,13 +8,12 @@
 - [Requirements](#Requirements)
 
 ## Description
-VeriFace is a project we are implementing for our senior project in Computer Engineering. It is an attendance tracking system that uses RFID and facial recognition to mark and check attendance easier and more accurate than the traditional method of marking attendance like paper sign-in sheets or manually calling out names in a classroom. These older methods are often time-consuming, prone to erros, and can also be easily manipulated.
+VeriFace is a project we are implementing for our senior project in Computer Engineering. It is an attendance tracking system that uses RFID and facial recognition to mark and check attendance easier and more accurate than the traditional method of marking attendance like paper sign-in sheets or manually calling out names in a classroom. These older methods are often time-consuming, prone to errors, and can also be easily manipulated.
 
-The system works with an Arduino board connected with the RFID reader to scan tags and then confirms the identity with facial recognition through the webcam of a laptop for simplicity. Everything is managed through a website that we are building with mainly Flask, Python, and SQLAlchemy, where attedance records can be viewed and managed. The website includes different roles (like guest, student, professor, and admin), and each role has specific privileges to access or perform certain tasks within the system.
+The system works with an Arduino board connected with the RFID reader to scan tags and then confirms the identity with facial recognition through the webcam of a laptop for simplicity. Everything is managed through a website that we are building with mainly Flask, Python, and SQLAlchemy, where attendance records can be viewed and managed. The website includes different roles (like guest, student, professor, and admin), and each role has specific privileges to access or perform certain tasks within the system.
 
 ## Objective
-The goal that we set for this project is to create a simple, reliable, and secure way to track attendance. Instead of relying on manual sign-ins or outdated methods, we want to automate the process and reduce errors during the attendance marking process. It is designed to save time, keep records organized, and make things more transparent for everyone that uses. By adding roles and privileges, we’re making sure the system is flexible and secure, so only the right people can perform certain actions.
-
+The goal that we set for this project is to create a simple, reliable, and secure way to track attendance. Instead of relying on manual sign-ins or outdated methods, we want to automate the process and reduce errors during the attendance marking process. It is designed to save time, keep records organized, and make things more transparent for everyone that uses. By adding roles and privileges, we are making sure the system is flexible and secure, so only the right people can perform certain actions.
 
 ## Collaborators
 - Rodrigo Chen
@@ -68,4 +67,4 @@ For more information on virtual environment, [visit this website for more inform
 ### Reinitialize Database
 To reinitialize the database, run the following command: ``python3 reset_db.py``
 
-After running this command, all the data stored previsouly will be deleted and a new database file will be created.
+After running this command, all the data stored previously will be deleted and a new database file will be created.
