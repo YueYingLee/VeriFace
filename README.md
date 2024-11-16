@@ -38,7 +38,7 @@ Software:
 
 ### Hardware Setup
 To set up the hardware for the RFID system:
-1. Connect the MFRC522 RFID Module to the Arduino Board. Refer to this datasheet: ``https://www.nxp.com/docs/en/data-sheet/MFRC522.pdf``
+1. Connect the MFRC522 RFID Module to the Arduino Board. [Refer to this datasheet link](https://www.nxp.com/docs/en/data-sheet/MFRC522.pdf)
 2. Upload Code to the Arduino.
 3. Verify Connections.
 4. Connect the Arduino to the your computer bia USB cable
