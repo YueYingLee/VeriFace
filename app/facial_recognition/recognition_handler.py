@@ -4,6 +4,8 @@ import face_recognition as fr
 import numpy as np
 import time
 from .global_vars import frame_queue
+from models import Attendance
+from app import db
 
 RECOGNITION_THRESHOLD = 0.5     # if the difference in comparision is under this threshold --> face is a match
 CONFIRM_FACE = 8               # must verify face for this many frames prevent a false match
@@ -65,6 +67,10 @@ def start_facial_recognition(target_rfid, users):
                 name = 'Unknown'
                 if matches[0]:
                     name = f'{target_user[0].fname} {target_user[0].lname}'
+                    #add to db
+                    attendance = Attendance(eventID=1, userID=current_user.id, status='present')
+                    db.session.add(attendance)
+                    db.session.commit()
                     confirm_face += 1
                 else:
                     confirm_face = 0

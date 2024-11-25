@@ -1,8 +1,8 @@
 from flask import render_template, redirect, request, url_for
 from flask import flash, send_file, send_from_directory
-from .forms import LoginForm, LogoutForm, HomeForm, RegisterForm, AdminForm, AddEventsForm, ViewEventsForm
+from .forms import LoginForm, LogoutForm, HomeForm, RegisterForm, AdminForm, AddEventsForm, ViewEventsForm, AttendanceForm, viewAttendanceForm
 from werkzeug.security import generate_password_hash, check_password_hash
-from .models import User, Event
+from .models import User, Event, Attendance
 
 from app import myapp_obj
 from flask_login import current_user, login_user, logout_user, login_required
@@ -89,8 +89,36 @@ def viewEvents():
         flash("You aren't logged in yet!")
         return redirect('/')
     form = ViewEventsForm()
-    events = Event.query.filter_by() 
+    events = Event.query.filter_by(hostId=current_user.id) 
     return render_template('viewEvents.html', form = form , events = events)
+
+@myapp_obj.route("/attendance/<int:id>", methods=['GET', 'POST'])
+def attendance(id):
+    # if not current_user.is_authenticated: 
+    #     flash("You aren't logged in yet!")
+    #     return redirect('/')
+    # event = Event.query.get(id) 
+    # return redirect('/start/<int:id>', event = event)
+    if not current_user.is_authenticated: 
+        flash("You aren't logged in yet!")
+        return redirect('/')
+    form = AttendanceForm()
+    event = Event.query.get(id) 
+    return render_template('attendance.html', form = form, event = event)
+
+@myapp_obj.route("/viewAttendance/<int:id>", methods=['GET', 'POST'])
+def viewAttendance(id):
+    if not current_user.is_authenticated: 
+        flash("You aren't logged in yet!")
+        return redirect('/')
+    form = viewAttendanceForm()
+    event = Event.query.get(id)
+    # a = Attendance.query.filter_by(eventID = event.id) for getting attendance times when user gets scanned
+    attendances = Attendance.query.filter_by(eventID=event.id).all() 
+
+    users = [User.query.get(attendance.userID) for attendance in attendances] 
+    
+    return render_template('viewAttendance.html', form = form, users = users)
 
 @myapp_obj.route("/ApprovePicture/<int:id>")
 def ApprovePicture(id): #get user id of the user is getting approved
@@ -192,7 +220,7 @@ def register():
                     picApprove = 1,
                     roleApprove = 1,
                     reg_role = form.reg_role.data,
-                    act_role = 'guest'
+                    act_role = 'admin'
                 )
                 new.set_password(form.password.data)
                 db.session.add(new)
@@ -232,6 +260,7 @@ def start_attendance(id):
     
     camera_thread.start()
     rfid_thread.start()
+    #link these both to start button and create stop functions for both
 
     return Response(display_camera(),
                     mimetype='multipart/x-mixed-replace; boundary=frame')

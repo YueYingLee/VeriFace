@@ -56,3 +56,10 @@ class AddEventsForm(FlaskForm):
 
 class ViewEventsForm(FlaskForm):
     edit = SubmitField('Edit')
+
+class AttendanceForm(FlaskForm):
+    start = SubmitField('Start') #start scanning -> facial
+    stop = SubmitField('Stop') 
+
+class viewAttendanceForm(FlaskForm):
+    edit = SubmitField('Edit') #placeholder

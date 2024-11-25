@@ -1,8 +1,8 @@
-### IF THIS FILE IS MODIFIED, RUN reset_db.py TO RECREATE TABLES
 from app import db
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 from app import login
+from flask_login import UserMixin
 from flask_login import UserMixin
 from sqlalchemy.sql import func
 
@@ -24,9 +24,8 @@ class User(db.Model, UserMixin):
     reg_role = db.Column(db.String(32), nullable=False)
     act_role = db.Column(db.String(32), nullable=False)
 
-
-    rfid = db.Column(db.String(32), nullable=False, unique=True)
-    events = db.relationship('Event', secondary='user_events', back_populates='users')
+    events = db.relationship('Event', backref='user')
+    students = db.relationship('Attendance', backref='user')
 
     def set_password(self, password):
         self.password = generate_password_hash(password)
@@ -40,25 +39,29 @@ class User(db.Model, UserMixin):
 class Event(db.Model, UserMixin):
 
     id = db.Column(db.Integer, primary_key=True)
-    hostId = db.Column(db.Integer, nullable = False)
+    hostId = db.Column(db.Integer, db.ForeignKey('user.id'), nullable = False)
     eventName = db.Column(db.String(32), nullable=False)
     date = db.Column(db.Date, default=datetime.utcnow)
     time = db.Column(db.Time, default=datetime.utcnow)
+
+    attendances = db.relationship('Attendance', backref='event')
     # time = db.Column(db.DateTime, default=datetime.utcnow)
     #add one for time of class/event
-
-    users = db.relationship('User', secondary='user_events', back_populates='events')
 
     def __repr__(self):
         return f'<user {self.id}>'
     
-user_events = db.Table(
-    'user_events',
-    db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
-    db.Column('event_id', db.Integer, db.ForeignKey('event.id'))
-)
+class Attendance(db.Model, UserMixin):
 
+    id = db.Column(db.Integer, primary_key=True)
+    eventID = db.Column(db.Integer, db.ForeignKey('event.id'), nullable=False)
+    userID = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    status = db.Column(db.String(50), nullable=False)  # "present" or "absent"
+    # timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def __repr__(self):
+        return f'<attendance {self.id}>'
+    
 @login.user_loader
 def load_user(id):
     return User.query.get(int(id))
-    
