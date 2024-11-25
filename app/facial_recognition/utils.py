@@ -162,5 +162,11 @@ def mark_attendance(user):
         if os.stat(filename).st_size == 0:
             writer.writeheader()
         writer.writerow(row)
+        
+        #figure out how to get eventID
+
+        attendance = Attendance(eventID=1, userID=user.id, status='present')
+        db.session.add(attendance)
+        db.session.commit()
 
         print(f'Marked attendance for {row["Name"]}')
