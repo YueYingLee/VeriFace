@@ -24,6 +24,8 @@ class User(db.Model, UserMixin):
     reg_role = db.Column(db.String(32), nullable=False)
     act_role = db.Column(db.String(32), nullable=False)
 
+    rfid = db.Column(db.String(32), nullable=False, unique=True)
+
     events = db.relationship('Event', backref='user')
     students = db.relationship('Attendance', backref='user')
 
