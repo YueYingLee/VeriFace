@@ -68,9 +68,10 @@ def start_facial_recognition(target_rfid, users):
                 if matches[0]:
                     name = f'{target_user[0].fname} {target_user[0].lname}'
                     #add to db
-                    attendance = Attendance(eventID=1, userID=current_user.id, status='present')
-                    db.session.add(attendance)
-                    db.session.commit()
+
+                    # attendance = Attendance(eventID=1, userID=current_user.id, status='present')
+                    # db.session.add(attendance)
+                    # db.session.commit()
                     confirm_face += 1
                 else:
                     confirm_face = 0
