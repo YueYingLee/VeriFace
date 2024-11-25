@@ -1,5 +1,4 @@
 from app import myapp_obj, db
-from app.models import User, Event
 
 with myapp_obj.app_context():
     db.drop_all()

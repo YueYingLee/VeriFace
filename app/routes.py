@@ -1,24 +1,22 @@
-from flask import render_template
-from flask import redirect, request, url_for
+from flask import render_template, redirect, request, url_for
 from flask import flash, send_file, send_from_directory
 from .forms import LoginForm, LogoutForm, HomeForm, RegisterForm, AdminForm, AddEventsForm, ViewEventsForm, AttendanceForm, viewAttendanceForm
 from werkzeug.security import generate_password_hash, check_password_hash
 from .models import User, Event, Attendance
 
 from app import myapp_obj
-from flask_login import current_user
-from flask_login import login_user
-from flask_login import logout_user
-from flask_login import login_required
+from flask_login import current_user, login_user, logout_user, login_required
 from werkzeug.utils import secure_filename
 from io import BytesIO
 from . import db
 from datetime import datetime
 from flask_moment import Moment
+from flask import Response
 
 import threading
 import cv2
-# from .facial_recognition import recognition_utils, recognition_handler, rfid_handler, event_controller
+from .facial_recognition.utils import poll_rfid, display_camera, encode_image
+from .facial_recognition.global_vars import end_event
 
 @myapp_obj.route("/", methods=['GET', 'POST'])
 @myapp_obj.route("/login", methods=['GET', 'POST'])
@@ -217,34 +215,28 @@ def register():
         if request.method == "POST":
             file = request.files['file']
 
-            new = User(fname = form.fname.data, lname = form.lname.data, username = form.username.data, email = form.email.data, file = file.filename, data=file.read(), picApprove = 1, roleApprove = 1,reg_role = form.reg_role.data, act_role = 'guest')
-            new.set_password(form.password.data)
-            db.session.add(new)
-            db.session.commit()
-            return redirect('/')
-        
-            # # file image must be validated before registering is complete
-            # try:
-            #     encode = recognition_utils.encode_image(file)
-            #     new = User (
-            #         fname = form.fname.data,
-            #         lname = form.lname.data,
-            #         username = form.username.data,
-            #         email = form.email.data,
-            #         file = file.filename,
-            #         data=encode,
-            #         picApprove = 1,
-            #         roleApprove = 1,
-            #         reg_role = form.reg_role.data,
-            #         act_role = 'admin'
-            #     )
-            #     new.set_password(form.password.data)
-            #     db.session.add(new)
-            #     db.session.commit()
-            #     return redirect('/')
+            # file image must be validated before registering is complete
+            try:
+                encode = encode_image(file)
+                new = User (
+                    fname = form.fname.data,
+                    lname = form.lname.data,
+                    username = form.username.data,
+                    email = form.email.data,
+                    file = file.filename,
+                    data=encode,
+                    picApprove = 1,
+                    roleApprove = 1,
+                    reg_role = form.reg_role.data,
+                    act_role = 'guest'
+                )
+                new.set_password(form.password.data)
+                db.session.add(new)
+                db.session.commit()
+                return redirect('/')
 
-            # except ValueError as e:
-            #     flash(e)
+            except ValueError as e:
+                flash(str(e))
 
     return render_template('register.html', form=form)
 
@@ -268,31 +260,21 @@ The idea is:
 '''
 @myapp_obj.route('/start-attendance/<int:id>')
 def start_attendance(id):
-    from .facial_recognition import recognition_utils, recognition_handler, rfid_handler, event_controller
-
-    # initialize camera
-    global cap
-    cap = recognition_utils.initialize_camera()
-    if not cap:
-        return 'Camera initialization failed.'
-
-    # grab a list of all users corresponding to this event
-    users_in_event = User.query.filter_by(events.id==id).all()
+    users_in_event = User.query.filter(User.events.any(id=id)).all()
 
     # Initialize and start threads
-    rfid_thread = threading.Thread(target=rfid_handler.poll_rfid, args=(cap, users_in_event,), daemon=True)
-    camera_thread = threading.Thread(target=recognition_utils.display_camera, args=(cap,), daemon=True)
+    camera_thread = threading.Thread(target=display_camera, daemon=True)
+    rfid_thread = threading.Thread(target=poll_rfid, args=(users_in_event,), daemon=True)
     
-    rfid_thread.start()
     camera_thread.start()
+    rfid_thread.start()
 
-    print(f'attendance started for event id: {id}')
+    return Response(display_camera(),
+                    mimetype='multipart/x-mixed-replace; boundary=frame')
+
 
 
 @myapp_obj.route('/stop-attendance')
 def stop_attendance():
-    from .facial_recognition import recognition_utils, recognition_handler, rfid_handler, event_controller
-
-    event_controller.end_event.set()
-
-    print('attendance process quit')
+    end_event.set()
+    return redirect('/viewEvents')
