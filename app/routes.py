@@ -104,6 +104,7 @@ def attendance(id):
         return redirect('/')
     form = AttendanceForm()
     event = Event.query.get(id) 
+    
     return render_template('attendance.html', form = form, event = event)
 
 @myapp_obj.route("/viewAttendance/<int:id>", methods=['GET', 'POST'])
@@ -220,7 +221,7 @@ def register():
                     picApprove = 1,
                     roleApprove = 1,
                     reg_role = form.reg_role.data,
-                    act_role = 'admin'
+                    act_role = 'guest'
                 )
                 new.set_password(form.password.data)
                 db.session.add(new)
