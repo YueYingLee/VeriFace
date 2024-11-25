@@ -12,6 +12,8 @@ import serial.tools.list_ports
 from . import recognition_handler
 import time
 from .global_vars import frame_queue, end_event
+from ..models import Attendance
+from app import db
 
 facial_path = os.path.dirname(os.path.abspath(__file__))                            # Path to facial_recognition/
 app_path = os.path.dirname(facial_path)                                             # Path to app/ 
@@ -160,5 +162,11 @@ def mark_attendance(user):
         if os.stat(filename).st_size == 0:
             writer.writeheader()
         writer.writerow(row)
+        
+        #figure out how to get eventID
+
+        attendance = Attendance(eventID=1, userID=user.id, status='present')
+        db.session.add(attendance)
+        db.session.commit()
 
         print(f'Marked attendance for {row["Name"]}')

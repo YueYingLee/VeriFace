@@ -111,8 +111,9 @@ def attendance(id):
         return redirect('/')
     form = AttendanceForm()
     event = Event.query.get(id) 
+    user = User.query.filter_by(username=current_user.username).first()
     
-    return render_template('attendance.html', form = form, event = event)
+    return render_template('attendance.html', form = form, user = user, event = event)
 
 @myapp_obj.route("/viewAttendance/<int:id>", methods=['GET', 'POST'])
 def viewAttendance(id):
@@ -229,7 +230,8 @@ def register():
                     picApprove = 1,
                     roleApprove = 1,
                     reg_role = form.reg_role.data,
-                    act_role = 'guest'
+                    act_role = 'guest',
+                    rfid = 1233297 #manually set this for now
                 )
                 new.set_password(form.password.data)
                 db.session.add(new)
@@ -262,7 +264,6 @@ The idea is:
 @myapp_obj.route('/start-attendance/<int:id>')
 def start_attendance(id):
     users_in_event = User.query.filter(User.events.any(id=id)).all()
-
     # Initialize and start threads
     camera_thread = threading.Thread(target=display_camera, daemon=True)
     rfid_thread = threading.Thread(target=poll_rfid, args=(users_in_event,), daemon=True)
