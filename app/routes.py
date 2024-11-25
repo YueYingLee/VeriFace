@@ -111,6 +111,7 @@ def attendance(id):
         return redirect('/')
     form = AttendanceForm()
     event = Event.query.get(id) 
+    
     return render_template('attendance.html', form = form, event = event)
 
 @myapp_obj.route("/viewAttendance/<int:id>", methods=['GET', 'POST'])
@@ -268,6 +269,7 @@ def start_attendance(id):
     
     camera_thread.start()
     rfid_thread.start()
+    #link these both to start button and create stop functions for both
 
     return Response(display_camera(),
                     mimetype='multipart/x-mixed-replace; boundary=frame')
