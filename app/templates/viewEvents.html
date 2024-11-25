@@ -28,6 +28,8 @@
       <th>Name</th>
       <th>Date </th>
       <th>Time </th>
+      <th>Start Attendance </thth>
+      <th>View Attendance </thth>
     </tr>
   </thread>
   <tbody>
@@ -36,6 +38,8 @@
       <td> {{events.eventName}}</td>
       <td>{{events.date}}</td>
       <td>{{events.time}}</td>
+      <td><a href="{{url_for('attendance', id = events.id)}}">Start Attendance</a></td>
+      <td><a href="{{url_for('viewAttendance', id = events.id)}}">View Attendance</a></td>
     </tr>
     {% endfor %}
   </tbody>

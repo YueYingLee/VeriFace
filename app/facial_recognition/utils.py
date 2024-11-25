@@ -12,6 +12,8 @@ import serial.tools.list_ports
 from . import recognition_handler
 import time
 from .global_vars import frame_queue, end_event
+from models import Attendance
+from app import db
 
 facial_path = os.path.dirname(os.path.abspath(__file__))                            # Path to facial_recognition/
 app_path = os.path.dirname(facial_path)                                             # Path to app/ 
