@@ -26,8 +26,10 @@ class User(db.Model, UserMixin):
 
     rfid = db.Column(db.String(32), nullable=False, unique=True)
 
-    events = db.relationship('Event', backref='user')
-    students = db.relationship('Attendance', backref='user')
+    events = db.relationship('Event', secondary='user_events', back_populates='users')
+
+    # events = db.relationship('Event', backref='user')
+    # students = db.relationship('Attendance', backref='user')
 
     def set_password(self, password):
         self.password = generate_password_hash(password)
@@ -46,7 +48,9 @@ class Event(db.Model, UserMixin):
     date = db.Column(db.Date, default=datetime.utcnow)
     time = db.Column(db.Time, default=datetime.utcnow)
 
-    attendances = db.relationship('Attendance', backref='event')
+    # attendances = db.relationship('Attendance', backref='event')
+
+    users = db.relationship('User', secondary='user_events', back_populates='events')
     # time = db.Column(db.DateTime, default=datetime.utcnow)
     #add one for time of class/event
 

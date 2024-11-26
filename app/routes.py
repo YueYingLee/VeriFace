@@ -153,6 +153,7 @@ def ApproveUser(id):
     else: 
          user = User.query.get(id)
          user.roleApprove=0 
+         user.act_role = user.reg_role
          db.session.commit()
          return redirect("/index")
 
@@ -164,6 +165,7 @@ def UnapproveUser(id):
     else: 
          user = User.query.get(id)
          user.roleApprove=1 
+         user.act_role = 'guest'
          db.session.commit()
          return redirect("/index")
 
