@@ -48,21 +48,31 @@
 </div>
     <!--  <div class ="card container">  --> 
  <div class ="grid-container">
+  {% if current_user_role in ["professor", "staff"] %}
+    <div class="card" onclick="window.location.href='/addEvents'"> 
+      <h2> Add Events </h2>
+    </div>  
    
-  <div class="card" onclick="window.location.href='/addEvents'"> 
-    <h2> Add Events </h2>
-  </div>  
+    <div class="card" onclick="window.location.href='/viewEvents'"> 
+      <h2> View Events </h2>
+    </div>  
    
-  <div class="card" onclick="window.location.href='/viewEvents'"> 
-    <h2> View Events </h2>
-  </div>  
+    <div class="card" onclick ="window.location. href='/viewEvents'"> 
+      <h2> Start Attendance </h2>
+    </div>  
    
-  <div class="card" onclick ="window.location. href='/viewEvents'"> 
-    <h2> Find an event you want to view attedance for </h2>
-  </div>  
-   
-  <div class="card" onclick="window.location.href='/viewEvents'"> 
-    <h2> View attendance </h2>
-  </div>
+    <div class="card" onclick="window.location.href='/viewEvents'"> 
+      <h2> View attendance </h2>
+    </div>
+    {% endif %}
+
+    {% if current_user_role in ["student", "guest"] %}
+    <div class="single-card">
+      <div class="card" onclick="window.location.href='/viewEvents'"> 
+        <h2> View attendance </h2>
+      </div>
+    </div>
+    {% endif %}
+
 </div>  
 {% endblock %}

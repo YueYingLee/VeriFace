@@ -53,6 +53,7 @@ def index():
     if not current_user.is_authenticated: 
         flash("You aren't logged in yet!")
         return redirect('/')
+    current_user_role = current_user.act_role
     if current_user.act_role == 'admin':
         return redirect('/admin')
     ''' #if current_user.act_role == 'professor' or current_user.act_role == 'staff':
@@ -66,7 +67,7 @@ def index():
         db.session.add(attendance)
         db.session.commit()
     form = HomeForm()
-    return render_template('index.html', form = form)
+    return render_template('index.html', form = form, current_user_role = current_user_role)
 
 @myapp_obj.route("/admin", methods=['GET', 'POST'])
 def admin():
@@ -233,7 +234,7 @@ def register():
                     roleApprove = 0,
                     reg_role = form.reg_role.data,
                     act_role = 'guest',
-                    rfid = 1233297 #manually set this for now
+                    rfid = 1233296 #manually set this for now
                 )
                 new.set_password(form.password.data)
                 db.session.add(new)
