@@ -5,7 +5,6 @@ __pycache__/
 venv/
 
 # Local databases
-*.db
 *.sqlite3
 
 # Environment files

@@ -300,8 +300,6 @@ def start_attendance(id):
     return Response(display_camera(),
                     mimetype='multipart/x-mixed-replace; boundary=frame')
 
-
-
 @myapp_obj.route('/stop-attendance')
 def stop_attendance():
     end_event.set()
