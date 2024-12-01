@@ -34,6 +34,11 @@ body {
   color: #D5D2D0; /* Set the color to black */
   text-decoration: none; /* Remove underline */
 }
+/* Active State for Current Page */
+.nav-item.active .nav-link {
+   
+  color: rgb(27, 26, 26); /* Keep text color white */
+}
 
 .container {
   max-width: 600px;
