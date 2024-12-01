@@ -9,6 +9,7 @@ from sqlalchemy.sql import func
 class User(db.Model, UserMixin):
 
     id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(150), unique=True) #maybe check if it ends with @sjsu.edu
     username = db.Column(db.String(32), nullable=False)
     password = db.Column(db.String(32), nullable=False)
     fname = db.Column(db.String(150))
@@ -18,6 +19,7 @@ class User(db.Model, UserMixin):
     # profile_picture = db.Column(db.LargeBinary)
     # add one to see if profile picture uploaded is the same as the face of the person being scanned
     # add to check for image upload approvable on admin view
+    # 0 = true, 1 = false
     picApprove = db.Column(db.Integer)
     roleApprove = db.Column(db.Integer)
     reg_role = db.Column(db.String(32), nullable=False)
@@ -42,7 +44,7 @@ class Event(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     hostId = db.Column(db.Integer, db.ForeignKey('user.id'), nullable = False)
     eventName = db.Column(db.String(32), nullable=False)
-    #date = db.Column(db.Date, default=datetime.utcnow)
+    date = db.Column(db.Date, default=datetime.utcnow)
     time = db.Column(db.Time, default=datetime.utcnow)
 
     attendances = db.relationship('Attendance', backref='event')

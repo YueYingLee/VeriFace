@@ -29,12 +29,12 @@
 </nav>
 </br>
 
-<p>{{moment().format('LLL')}}</p>
+<p>{{moment().format('LLL')}} <br> Welcome {{current_user.username}}!</p>
 
 <div class ="container"> 
   <div class = "boxing"> 
     <br>
-    <p> Welcome {{current_user.username}}!</p>
+   <!-- <p> Welcome {{current_user.username}}!</p> -->
   </div>
   <h2>Account Info</h2>
   <div class = "text">
@@ -44,5 +44,10 @@
     <p>Email: {{current_user.email}}</p>
     <p><a href="download/{{ current_user.id }}">Profile</a></p>
   </div>
-</div> 
+</div>
+<a class="nav-link" href="/addEvents">Add Events</a>
+<a class="nav-link" href="/viewEvents">View Events</a> 
+<a class="nav-link" href="/viewEvents">Find an event you want to view attedance for</a> 
+<!-- View attedance for students will be based on their roles so it directly pops out --> 
+<a class="nav-link" href="/viewEvents">View attedance (students)</a> 
 {% endblock %}

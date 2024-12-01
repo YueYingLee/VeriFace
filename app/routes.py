@@ -55,11 +55,12 @@ def index():
         return redirect('/')
     if current_user.act_role == 'admin':
         return redirect('/admin')
-    # if current_user.act_role == 'professor' or current_user.act_role == 'staff':
+    ''' #if current_user.act_role == 'professor' or current_user.act_role == 'staff':
     #     return redirect('/addEvents')
 
     # made it so when student logs in they auto get checked into event 1 --> for testing and causes duplicates 
     # so when we do actual attendance we need to query and make sure user has not registered for event and then add to db, if they already in event then dont add/do anything
+   '''
     if current_user.act_role == 'student':
         attendance = Attendance(eventID=1, userID=current_user.id, status='present')
         db.session.add(attendance)
@@ -172,6 +173,7 @@ def UnapproveUser(id):
     else: 
          user = User.query.get(id)
          user.roleApprove=1 
+         user.act_role= 'guest'
          db.session.commit()
          return redirect("/index")
 
@@ -227,11 +229,11 @@ def register():
                     email = form.email.data,
                     file = file.filename,
                     data=encode,
-                    picApprove = 1,
-                    roleApprove = 1,
+                    picApprove = 0,
+                    roleApprove = 0,
                     reg_role = form.reg_role.data,
                     act_role = 'guest',
-                    rfid = 1233297 #manually set this for now
+                    rfid = 1233298 #manually set this for now
                 )
                 new.set_password(form.password.data)
                 db.session.add(new)
