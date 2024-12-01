@@ -13,7 +13,7 @@
       <li class="nav-item active">
         <a class="nav-link" href="/">Home <span class="sr-only">(current)</span></a>
       </li>
-      {%if current_user.act_role =="professor"%}
+      {% if current_user_role in ["professor", "staff"] %}
         <li class="nav-item">
           <a class="nav-link" href="/viewEvents">View Events</a>
         </li>

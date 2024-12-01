@@ -98,8 +98,9 @@ def viewEvents():
         flash("You aren't logged in yet!")
         return redirect('/')
     form = ViewEventsForm()
+    current_user_role = current_user.act_role
     events = Event.query.filter_by(hostId=current_user.id) 
-    return render_template('viewEvents.html', form = form , events = events)
+    return render_template('viewEvents.html', form = form , events = events, current_user_role = current_user_role)
 
 @myapp_obj.route("/attendance/<int:id>", methods=['GET', 'POST'])
 def attendance(id):
