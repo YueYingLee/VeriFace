@@ -42,12 +42,27 @@
     <p>First Name: {{current_user.fname}}</p>
     <p>Last Name: {{current_user.lname}}</p>
     <p>Email: {{current_user.email}}</p>
+    <p>Your role: {{current_user.act_role}}</p>
     <p><a href="download/{{ current_user.id }}">Profile</a></p>
   </div>
 </div>
-<a class="nav-link" href="/addEvents">Add Events</a>
-<a class="nav-link" href="/viewEvents">View Events</a> 
-<a class="nav-link" href="/viewEvents">Find an event you want to view attedance for</a> 
-<!-- View attedance for students will be based on their roles so it directly pops out --> 
-<a class="nav-link" href="/viewEvents">View attedance (students)</a> 
+    <!--  <div class ="card container">  --> 
+ <div class ="grid-container">
+   
+  <div class="card" onclick="window.location.href='/addEvents'"> 
+    <h2> Add Events </h2>
+  </div>  
+   
+  <div class="card" onclick="window.location.href='/viewEvents'"> 
+    <h2> View Events </h2>
+  </div>  
+   
+  <div class="card" onclick ="window.location. href='/viewEvents'"> 
+    <h2> Find an event you want to view attedance for </h2>
+  </div>  
+   
+  <div class="card" onclick="window.location.href='/viewEvents'"> 
+    <h2> View attendance </h2>
+  </div>
+</div>  
 {% endblock %}

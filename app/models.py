@@ -57,7 +57,14 @@ class Event(db.Model, UserMixin):
 
     def __repr__(self):
         return f'<user {self.id}>'
-    
+ 
+#associate table for user_events 
+class UserEvents(db.Model, UserMixin):
+    __tablename__ = 'user_events'  # Explicitly define the table name
+
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
+    event_id = db.Column(db.Integer, db.ForeignKey('event.id'), primary_key=True)
+
 class Attendance(db.Model, UserMixin):
 
     id = db.Column(db.Integer, primary_key=True)

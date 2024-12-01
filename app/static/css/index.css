@@ -3,107 +3,150 @@ h1 {
     font-weight: bold;
 }
 body {
-font-family: Arial, sans-serif;
-background-color: #ffffff;
-color: #000000;
-margin: 0;
+  font-family: Arial, sans-serif;
+  background-color: #ffffff;
+  color: #000000;
+  margin: 0;
 }
 .navbar {
-    text-indent:10px;
-background-color: #4760A2;  /* 4760A2, 688EBD, 4170a2*/
-/*text-align: center; */
-padding: 50px 0;  
-font-size: 30px;
-justify-content: flex-start; 
-color: #D5D2D0; /* Black text color */
-font-weight: bold; /* Bold font weight */
-text-decoration: none; 
+  text-indent:10px;
+  background-color: #4760A2;  /* 4760A2, 688EBD, 4170a2*/
+  /*text-align: center; */
+  padding: 50px 0;  
+  font-size: 30px;
+  justify-content: flex-start; 
+  color: #D5D2D0; /* Black text color */
+  font-weight: bold; /* Bold font weight */
+  text-decoration: none; 
 } 
 .navbar a {
-      color: white; /* this changes color of navbar text*/
-      text-decoration: none; 
-      margin-right: 25px;
+  color: white; /* this changes color of navbar text*/
+  text-decoration: none; 
+  margin-right: 25px;
   }
+
 .navbar-link {
-color: #D5D2D0; /* Set the color to black */
-text-decoration: none; /* Remove underline */
+  color: #D5D2D0; /* Set the color to black */
+  text-decoration: none; /* Remove underline */
 }
 
 .container {
-max-width: 600px;
-margin: 20px auto;
-/*padding: 20px; */
-border: 1px solid #cccccc;
-background-color: rgb(204, 224, 239);
-border-radius: 10px;
-align-items: center;
+  max-width: 600px;
+  margin: 20px auto;
+  /*padding: 20px; */
+  border: 1px solid #cccccc;
+  background-color: rgb(204, 224, 239);
+  border-radius: 10px;
+  align-items: center;
 }
 .form-group {
-margin-bottom: 20px;
+  margin-bottom: 20px;
 }
 .form-control {
-width: 90%;
-padding: 10px;
-font-size: 16px;
-border: 1px solid #cccccc;
-border-radius: 5px;
+  width: 90%;
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid #cccccc;
+  border-radius: 5px;
 }
 .form-control:focus {
-outline: none;
-border-color: #007bff;
+  outline: none;
+  border-color: #007bff;
 }
 .btn {
-display: inline-block;
-padding: 10px 20px;
-font-size: 16px;
-border: none;
-border-radius: 5px;
-background-color: #a93f3f;
-color: #ffffff;
-cursor: pointer;
+  display: inline-block;
+  padding: 10px 20px;
+  font-size: 16px;
+  border: none;
+  border-radius: 5px;
+  background-color: #a93f3f;
+  color: #ffffff;
+  cursor: pointer;
 }
 .btn:hover {
-background-color: #0056b3;
+  background-color: #0056b3;
 }
 .error {
-color: #ff0000;
-font-size: 14px;
+  color: #ff0000;
+  font-size: 14px;
 }
 
 .alert {
-padding: 15px;
-margin-bottom: 20px;
-border: 1px solid transparent;
-border-radius: 4px;
+  padding: 15px;
+  margin-bottom: 20px;
+  border: 1px solid transparent;
+  border-radius: 4px;
 }
 .alert-success {
-color: #3c763d;
-background-color: #dff0d8;
-border-color: #d6e9c6;
+  color: #3c763d;
+  background-color: #dff0d8;
+  border-color: #d6e9c6;
 }
 .alert-error {
-color: #a94442;
-background-color: #f2dede;
-border-color: #ebccd1;
+  color: #a94442;
+  background-color: #f2dede;
+  border-color: #ebccd1;
 }
-  h2 {
-    color: #392F5A;
-    font-size: 200%;
-    text-align:center;
-  }
-  th, td{
-    padding:5px;
-    border: solid 1px;
-    border-spacing: 5px;
-   }
-   th{
-    background-color: rgb(204, 224, 239);
-   }
-  tr:nth-child(even){
-    background-color: #ededed;
-  }
-  table{
-    width: 80%;
-    margin-left: auto;
-    margin-right: auto;
-  }
+h2 {
+  color: #392F5A;
+  font-size: 200%;
+  text-align:center;
+}
+th, td{
+  padding:5px;
+  border: solid 1px;
+  border-spacing: 5px;
+}
+
+th{
+  background-color: rgb(204, 224, 239);
+}
+
+tr:nth-child(even){
+  background-color: #ededed;
+}
+
+table{
+  width: 80%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/*========= CARD ===========*/
+/* Grid Container */
+.grid-container {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* Two columns */
+  grid-gap: 20px; /* Space between cards */
+  padding: 20px;
+}
+
+/* Individual Card */
+.card {
+  background-color: #ffffff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  text-align: center;
+  transition: transform 0.2s, box-shadow 0.2s;
+  cursor: pointer;
+}
+
+/* Hover Effect for Cards */
+.card:hover {
+  transform: translateY(-10px); /* Lift effect */
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+/* Card Text */
+.card h2 {
+  font-size: 1.5rem;
+  margin: 0 0 10px;
+  color: #333;
+}
+
+.card p {
+  color: #666;
+  font-size: 1rem;
+}
