@@ -2,7 +2,7 @@ from flask_wtf import FlaskForm
 from flask import render_template
 from wtforms import StringField, PasswordField, SubmitField, FileField, validators
 from wtforms.validators import DataRequired, EqualTo
-from wtforms.fields import DateField, TimeField, SelectField
+from wtforms.fields import DateField, TimeField, SelectField, SelectMultipleField
 from datetime import datetime
 
 class LoginForm(FlaskForm):
@@ -52,6 +52,7 @@ class AddEventsForm(FlaskForm):
     eventName = StringField('Event Name', validators=[DataRequired(), validators.Length(max=32)], render_kw={"placeholder": "Event A"})
     date = DateField('Date', format='%Y-%m-%d', default=datetime.now() )
     time = TimeField('Time', format='%H:%M', default=datetime.now())
+    users = SelectMultipleField('Add Users', coerce=int)  # Multi-select for users
     submit = SubmitField('Submit')
 
 class ViewEventsForm(FlaskForm):

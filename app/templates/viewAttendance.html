@@ -35,15 +35,23 @@
       <th>User ID</th>
       <th>First Name </th>
       <th>Last Name </th>
+      <th>User Role</th>
+      <th>Status</th>
     </tr>
   </thread>
   <tbody>
+    {%for a in a%}
     {%for users in users%}
     <tr> 
+      {% if a.userID == users.id %}
         <td> {{users.id}}</td>
         <td> {{users.fname}}</td>
         <td> {{users.lname}}</td>
+        <td> {{users.act_role}}</td>
+        <td> {{a.status}} </td>
+        {%endif%}
     </tr>
+    {% endfor %}
     {% endfor %}
   </tbody>
 </table>

@@ -48,6 +48,12 @@
       <div class="page-header">
         {{form.time (class= "DateTimeField")}}
       </div>
+
+      <div class="form-group">
+        <br>
+        {{ form.users.label }}
+        {{ form.users(class="form-control", multiple="multiple") }}
+    </div>
   
       <p>{{form.submit()}}</p>
       </div>

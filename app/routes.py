@@ -61,11 +61,12 @@ def index():
 
     # made it so when student logs in they auto get checked into event 1 --> for testing and causes duplicates 
     # so when we do actual attendance we need to query and make sure user has not registered for event and then add to db, if they already in event then dont add/do anything
-   '''
+   
     if current_user.act_role == 'student':
-        attendance = Attendance(eventID=1, userID=current_user.id, status='present')
+        attendance = Attendance(eventID=1, userID=current_user.id, status='absent')
         db.session.add(attendance)
         db.session.commit()
+    '''
     form = HomeForm()
     return render_template('index.html', form = form, current_user_role = current_user_role)
 
@@ -83,12 +84,33 @@ def addEvents():
     if not current_user.is_authenticated: 
         flash("You aren't logged in yet!")
         return redirect('/')
+
+    #Only professors and staff can add events; validations checks here 
+    if current_user.act_role not in ['professor', 'staff']:
+        flash("You do not have permission to add events.")
+        return redirect('/index')
     form = AddEventsForm()
+   
+    #query users who can be registed to events 
+    users = User.query.filter(User.act_role.in_(['student', 'guest'])).all()
+    form.users.choices = [(user.id, user.username) for user in users]  # Populate users field dynamicallyrm
     if form.validate_on_submit():
         user = User.query.filter_by(username=current_user.username).first()
         new = Event(hostId = user.id, eventName = form.eventName.data, date = form.date.data, time = form.time.data)
+
+        selected_users_id = form.users.data
+        selected_users = User.query.filter(User.id.in_(selected_users_id)).all()
+        new.users.extend(selected_users)  #scroll
         db.session.add(new)
         db.session.commit()
+
+        for selected_user_id in selected_users_id:
+            attend = Attendance.query.filter_by(eventID= new.id, userID=selected_user_id).first() 
+            if attend is None: #check if user is not added then add them to attendance table
+                attendance = Attendance(eventID=new.id, userID=selected_user_id, status='absent')
+                db.session.add(attendance)
+                db.session.commit()
+
         return redirect("/viewEvents")
     return render_template('addEvents.html', form = form)
 
@@ -115,7 +137,6 @@ def attendance(id):
     form = AttendanceForm()
     event = Event.query.get(id) 
     user = User.query.filter_by(username=current_user.username).first()
-    
     return render_template('attendance.html', form = form, user = user, event = event)
 
 @myapp_obj.route("/viewAttendance/<int:id>", methods=['GET', 'POST'])
@@ -125,12 +146,12 @@ def viewAttendance(id):
         return redirect('/')
     form = viewAttendanceForm()
     event = Event.query.get(id)
-    # a = Attendance.query.filter_by(eventID = event.id) for getting attendance times when user gets scanned
+    a = Attendance.query.filter_by(eventID = event.id) #for getting attendance times when user gets scanned
     attendances = Attendance.query.filter_by(eventID=event.id).all() 
 
     users = [User.query.get(attendance.userID) for attendance in attendances] 
     
-    return render_template('viewAttendance.html', form = form, users = users)
+    return render_template('viewAttendance.html', form = form, users = users, a = a)
 
 @myapp_obj.route("/ApprovePicture/<int:id>")
 def ApprovePicture(id): #get user id of the user is getting approved
@@ -235,7 +256,7 @@ def register():
                     roleApprove = 0,
                     reg_role = form.reg_role.data,
                     act_role = 'guest',
-                    rfid = 1233296 #manually set this for now
+                    rfid = 1233295 #manually set this for now
                 )
                 new.set_password(form.password.data)
                 db.session.add(new)

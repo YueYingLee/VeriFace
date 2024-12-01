@@ -31,6 +31,7 @@ class User(db.Model, UserMixin):
 
     # events = db.relationship('Event', backref='user')
     # students = db.relationship('Attendance', backref='user')
+    
 
     def set_password(self, password):
         self.password = generate_password_hash(password)
@@ -50,7 +51,7 @@ class Event(db.Model, UserMixin):
     time = db.Column(db.Time, default=datetime.utcnow)
 
     # attendances = db.relationship('Attendance', backref='event')
-
+     
     users = db.relationship('User', secondary='user_events', back_populates='events')
     # time = db.Column(db.DateTime, default=datetime.utcnow)
     #add one for time of class/event
@@ -70,7 +71,7 @@ class Attendance(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     eventID = db.Column(db.Integer, db.ForeignKey('event.id'), nullable=False)
     userID = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    status = db.Column(db.String(50), nullable=False)  # "present" or "absent"
+    status = db.Column(db.String(50), nullable= False, default= "absent")  # "present" or "absent"
     # timestamp = db.Column(db.DateTime, default=datetime.utcnow)
 
     def __repr__(self):
