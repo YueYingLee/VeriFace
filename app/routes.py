@@ -4,6 +4,8 @@ from .forms import LoginForm, LogoutForm, HomeForm, RegisterForm, AdminForm, Add
 from werkzeug.security import generate_password_hash, check_password_hash
 from .models import User, Event, Attendance
 
+import base64
+
 from app import myapp_obj
 from flask_login import current_user, login_user, logout_user, login_required
 from werkzeug.utils import secure_filename
@@ -153,52 +155,105 @@ def viewAttendance(id):
     
     return render_template('viewAttendance.html', form = form, users = users, a = a)
 
-@myapp_obj.route("/ApprovePicture/<int:id>")
+@myapp_obj.route("/ApprovePicture/<int:id>", methods=["POST"])
 def ApprovePicture(id): #get user id of the user is getting approved
     if not current_user.is_authenticated:
         flash("You aren't logged in yet!")
         return redirect('/')
     else: 
-         user = User.query.get(id)
-         user.picApprove=0 
-         db.session.commit()
-         return redirect("/index")
-    #no need to render when approving
+        if request.method == "POST":
+            if current_user.act_role == 'admin': 
+                user = User.query.get(id)
+                if user and user.picApprove == 1:
+                    user.picApprove= 0 
+                    db.session.commit()
+                    flash("User picture approved successfully!" ,category = 'success')
+                else:
+                    flash("User picture not found or already approved!" , category ='error')
+            else:
+                flash('You do not have permission to approve users picture.' , category ='error')
+    return redirect("/index")
 
-@myapp_obj.route("/UnPicture/<int:id>")
+@myapp_obj.route("/UnPicture/<int:id>", methods=["POST"])
 def UnPicture(id):
     if not current_user.is_authenticated:
         flash("You aren't logged in yet!")
         return redirect('/')
     else: 
-         user = User.query.get(id)
-         user.picApprove=1 
-         db.session.commit()
-         return redirect("/index")
+        if request.method == "POST":
+            user = User.query.get(id)
+            if current_user.act_role == 'admin':   
+                if user and user.picApprove == 0:
+                    user.picApprove=1 
+                    db.session.commit()
+                    flash("User picture approved successfully!" ,category = 'success')
+                else:
+                    flash("User picture already unapproved!" , category ='error')
+            else:
+                flash('You do not have permission to unapprove users picture.' , category ='error')
+    return redirect("/index")
 
-@myapp_obj.route("/ApproveUser/<int:id>")
+@myapp_obj.route("/ApproveUser/<int:id>", methods=["POST"])
 def ApproveUser(id):
     if not current_user.is_authenticated:
         flash("You aren't logged in yet!")
         return redirect('/')
     else: 
-         user = User.query.get(id)
-         user.roleApprove=0 
-         user.act_role=user.reg_role
-         db.session.commit()
-         return redirect("/index")
+        if request.method == "POST":
+            if current_user.act_role == 'admin': 
+                user = User.query.get(id)
+                if user and user.roleApprove == 1:
+                    user.roleApprove = 0 #change the approved to true so that the registered user can now access the website
+                    user.act_role = user.reg_role
+                    db.session.commit() #commit changes after editing
+                    flash("User approved successfully!" ,category = 'success')
+                else:
+                    flash("User not found or already approved!" , category ='error')
+            else:
+                flash('You do not have permission to approve users.' , category ='error')
+    return redirect("/index")
 
-@myapp_obj.route("/UnapproveUser/<int:id>")
+@myapp_obj.route("/UnapproveUser/<int:id>",  methods=["POST"])
 def UnapproveUser(id):
     if not current_user.is_authenticated:
         flash("You aren't logged in yet!")
         return redirect('/')
     else: 
-         user = User.query.get(id)
-         user.roleApprove=1 
-         user.act_role= 'guest'
-         db.session.commit()
-         return redirect("/index")
+        if request.method == "POST":
+            user = User.query.get(id)
+            if current_user.act_role == 'admin': #Only admin can reject the user. Once rejected, the user will need to register again to be reconsidered
+                if user and user.roleApprove== 0:
+                    user.roleApprove=1 
+                    user.act_role= 'guest'
+                    db.session.commit()
+                    flash("User unapproved successfully!", category = 'success')
+                else:
+                        flash("User already unapproved!", category ='error')
+            else:
+                flash('You do not have permission to unapprove users.' , category ='error')
+    return redirect("/index")
+
+@myapp_obj.route("/change_user_role/<int:user_id>", methods=["GET", "POST"])
+def change_user_role(user_id):
+    if request.method == "POST":
+        if current_user.act_role == 'admin': #only admin can change the role fo user
+          user = User.query.get(user_id)
+          if user:
+            new_role = request.form.get("new_role")
+            if new_role:
+              if new_role != user.act_role:
+                  user.act_role = new_role #update the user role to new role 
+                  db.session.commit() #commit changes of the session 
+                  flash("User role updated successfully!", category = 'success')
+              else:
+                 flash("New role is the same as the current role.",category ='error')
+            else:
+               flash ('No new roles are provided.',category ='error')
+          else:
+            flash("User not found!",category ='error')
+        else:
+          flash('You do not have permission to change user roles.' ,category ='error')
+    return redirect(url_for("admin"))
 
 # logout button only appears when logged in
 @myapp_obj.route("/logout", methods=['POST', 'GET'])
@@ -255,8 +310,8 @@ def register():
                     picApprove = 0,
                     roleApprove = 0,
                     reg_role = form.reg_role.data,
-                    act_role = 'guest',
-                    rfid = 1233295 #manually set this for now
+                    act_role = 'admin',
+                    rfid = 1233294 #manually set this for now
                 )
                 new.set_password(form.password.data)
                 db.session.add(new)
@@ -268,14 +323,33 @@ def register():
 
     return render_template('register.html', form=form)
 
+ 
 @myapp_obj.route('/download/<int:id>')
 def download(id):
     img = User.query.filter_by(id=id).first()
     return send_file(BytesIO(img.data),
                      download_name=img.file, as_attachment=False) #change to true if want it to be downloaded auto; false rn to display on browser
 
-
 '''
+
+@myapp_obj.route('/download/<int:id>')
+def download(id):
+    img = User.query.filter_by(id=id).first()
+
+    if not img or not img.data:
+        return "Image not found", 404
+
+    # Determine MIME type dynamically based on file extension
+    mimetype, _ = guess_type(img.file)
+    mimetype = mimetype or "application/octet-stream"  # Fallback MIME type
+
+    return send_file(
+        BytesIO(img.data),
+        mimetype=mimetype,
+        download_name=img.file if img.file else f"user_{id}.jpg",
+        as_attachment=False
+    )
+ 
 The idea is:
     - constantly poll for RFID scans
     - if nothing is scanned, camera just stays on and does nothing

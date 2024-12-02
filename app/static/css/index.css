@@ -122,6 +122,10 @@ table{
   margin-right: auto;
 }
 
+.submit-button {
+  margin-right: 10px;
+}  
+
 /*========= CARD ===========*/
 /* Grid Container */
 .grid-container {

@@ -34,7 +34,9 @@
     <p>First Name: {{current_user.fname}}</p>
     <p>Last Name: {{current_user.lname}}</p>
     <p>Email: {{current_user.email}}</p>
-    <p><a href="download/{{ current_user.id }}">Profile</a></p>
+     <p><a href="download/{{ current_user.id }}">Profile</a></p>  
+   <!--<img src="data:image/jpeg;base64,{{ image }}" alt="Profile Picture" style="max-width: 300px;">  -->
+     
   </div>
 </div> 
 
@@ -44,8 +46,12 @@
     <tr>
       <th>Username</th>
       <th>Requested Role </th>
+      <th>Current Role </th>
       <th>Picture Approval Status</th>
-      <th>User Role Approval Status</th>
+      <th>Change Picture Approval</th>
+      <th>Role Approval status</th>
+      <th>Change Role approval </th>
+      <th>Actions</th>
     </tr>
   </thread>
   <tbody>
@@ -53,18 +59,72 @@
     <tr> 
       <td> {{users.username}}</td>
       <td>{{users.reg_role}}</td>
-
-      {%if users.picApprove == 1%}
-      <td><a href="{{url_for('ApprovePicture', id = users.id)}}">Yes Pic</a></td>
+      <td>{{users.act_role}}</td>
+      <td> {% if users.picApprove == 0 %}
+        Yes     
       {%else%}
-      <td><a href="{{url_for('UnPicture', id = users.id)}}">Bad Pic</a></td>
-      {%endif%}
+        No
+      {% endif%}
+  </td>
+    <td> 
+    <!-- Approving actions-->
+    {% if users.act_role != "admin" %}
+    {% if users.picApprove == 1 %}
+    <form action="{{ url_for('ApprovePicture', id=users.id) }}" method="POST" style="display: inline;">
+        <button type="submit" class="submit-button" >Approve</button>
+    </form>
+    {%else%}
+    <!-- Unapprove actions-->
+    <form action="{{ url_for('UnPicture', id=users.id) }}" method="POST" style="display: inline;">
+        <button type="submit" class="submit-button" >Unapprove</button>
+    </form>
+    {%endif%}
+    {%else%}
+      Admin can't be disapproved for picture.
+    {% endif%}
+  </td> 
 
-      {%if users.roleApprove == 1%}
-      <td><a href="{{url_for('ApproveUser', id = users.id)}}">Approve Role</a></td>
+       <!-- -->
+      <td> {% if users.roleApprove == 0 %}
+          Yes     
+        {%else%}
+          No
+        {% endif%}
+    </td>
+      <td> 
+      <!-- Approving actions-->
+      {% if users.act_role != "admin" %}
+      {% if users.roleApprove == 1 %}
+      <form action="{{ url_for('ApproveUser', id=users.id) }}" method="POST" style="display: inline;">
+          <button type="submit" class="submit-button" >Approve</button>
+      </form>
       {%else%}
-      <td><a href="{{url_for('UnapproveUser', id = users.id)}}">Change Role</a></td>
+      <!-- Unapprove actions-->
+      <form action="{{ url_for('UnapproveUser', id=users.id) }}" method="POST" style="display: inline;">
+          <button type="submit" class="submit-button" >Unapprove</button>
+      </form>
       {%endif%}
+      {%else%}
+        Admin can't be disapproved.
+      {% endif%}
+    </td> 
+    <td>
+      {% if users.roleApprove == 0 %}  
+        <!-- After approval, admin can also choose to change the user role --> 
+        <form action="{{ url_for('change_user_role', user_id =users.id) }}" method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to change the role for this user?');">
+          <select name="new_role">
+              <option disabled selected>Choose</option>
+              <option value="admin">Admin</option>
+              <option value="professor">Professor</option>
+              <option value="staff">Staff</option>
+              <option value="student">Student</option>
+              <option value="guest">Guest</option>
+          </select>
+          <button type="submit">Change Role</button>
+      </form>   {%else%}
+          User need to be approved for this feature.
+      <br> 
+      {% endif%} </td>
     </tr>
     {% endfor %}
   </tbody>
