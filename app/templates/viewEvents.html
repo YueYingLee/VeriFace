@@ -42,6 +42,7 @@
       <th>Name</th>
       <th>Date </th>
       <th>Time </th>
+      <th>Class Code </th>
       {% if current_user_role in ["professor", "staff"] %}
         <th>Start Attendance</th>
       {% endif %}
@@ -54,6 +55,7 @@
       <td> {{events.eventName}}</td>
       <td>{{events.date}}</td>
       <td>{{events.time}}</td>
+      <td>{{events.code}}</td>
       {% if current_user_role in ["professor", "staff"] %}
         <td><a href="{{url_for('attendance', id = events.id)}}">Start Attendance</a></td>
       {% endif%}

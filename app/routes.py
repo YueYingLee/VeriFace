@@ -1,6 +1,6 @@
 from flask import render_template, redirect, request, url_for
 from flask import flash, send_file, send_from_directory
-from .forms import LoginForm, LogoutForm, HomeForm, RegisterForm, AdminForm, AddEventsForm, ViewEventsForm, AttendanceForm, viewAttendanceForm
+from .forms import LoginForm, LogoutForm, HomeForm, RegisterForm, AdminForm, AddEventsForm, ViewEventsForm, AttendanceForm, viewAttendanceForm, AddtoEventsForm
 from werkzeug.security import generate_password_hash, check_password_hash
 from .models import User, Event, Attendance
 
@@ -96,7 +96,7 @@ def addEvents():
     form.users.choices = [(user.id, user.username) for user in users]  # Populate users field dynamicallyrm
     if form.validate_on_submit():
         user = User.query.filter_by(username=current_user.username).first()
-        new = Event(hostId = user.id, eventName = form.eventName.data, date = form.date.data, time = form.time.data)
+        new = Event(hostId = user.id, eventName = form.eventName.data, date = form.date.data, time = form.time.data, code = form.code.data)
 
         selected_users_id = form.users.data
         selected_users = User.query.filter(User.id.in_(selected_users_id)).all()
@@ -113,6 +113,28 @@ def addEvents():
 
         return redirect("/viewEvents")
     return render_template('addEvents.html', form = form)
+
+@myapp_obj.route("/addtoEvents", methods=['GET', 'POST'])
+def addtoEvents():
+    if not current_user.is_authenticated: 
+        flash("You aren't logged in yet!")
+        return redirect('/')
+
+    #Students and guests can add themselves to the event via code
+    form = AddtoEventsForm()
+
+    if form.validate_on_submit():
+        event = Event.query.filter_by(code =form.code.data).first()
+        # attend = Attendance.query.filter_by(eventID= event.id, userID=current_user.id).all() 
+        # if attend is None: #check if user is not added then add them to attendance table
+        attendance = Attendance(eventID=event.id, userID=current_user.id, status='absent')
+        db.session.add(attendance)
+        db.session.commit()
+
+        return redirect("/index")
+    return render_template('addtoEvents.html', form = form)
+
+
 
 @myapp_obj.route("/viewEvents", methods=['GET', 'POST'])
 def viewEvents():
@@ -256,7 +278,7 @@ def register():
                     roleApprove = 0,
                     reg_role = form.reg_role.data,
                     act_role = 'guest',
-                    rfid = 1233295 #manually set this for now
+                    rfid = 1233294 #manually set this for now
                 )
                 new.set_password(form.password.data)
                 db.session.add(new)
