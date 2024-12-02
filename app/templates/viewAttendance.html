@@ -17,9 +17,16 @@
       <li class="nav-item">
         <a class="nav-link" href="/viewEvents">View Events</a>
       </li>
-      <li class="nav-item">
-        <a class="nav-link" href="/addEvents">Add Events</a>
-      </li>
+      {% if current_user.act_role == 'professor' or current_user.act_role == 'staff'%}
+        <li class="nav-item">
+          <a class="nav-link" href="/addEvents">Add Events</a>
+        </li>
+      {%endif%}
+      {% if current_user.act_role == 'student' or current_user.act_role == 'guest'%}
+        <li class="nav-item">
+          <a class="nav-link" href="/addtoEvents">Add Events</a>
+        </li>
+      {%endif%}
       <li class="nav-item">
         <a class="nav-link" href="/logout">Logout</a>
       </li>
@@ -40,19 +47,36 @@
     </tr>
   </thread>
   <tbody>
-    {%for a in a%}
-    {%for users in users%}
-    <tr> 
-      {% if a.userID == users.id %}
-        <td> {{users.id}}</td>
-        <td> {{users.fname}}</td>
-        <td> {{users.lname}}</td>
-        <td> {{users.act_role}}</td>
-        <td> {{a.status}} </td>
-        {%endif%}
-    </tr>
-    {% endfor %}
-    {% endfor %}
+    {% if current_user.act_role == 'professor' or current_user.act_role == 'staff'%} 
+      {%for a in a%}
+        {%for users in users%}
+        <tr> 
+          {% if a.userID == users.id %}
+            <td> {{users.id}}</td>
+            <td> {{users.fname}}</td>
+            <td> {{users.lname}}</td>
+            <td> {{users.act_role}}</td>
+            <td> {{a.status}} </td>
+            {%endif%}
+        </tr>
+        {% endfor %}
+      {% endfor %}
+    {%endif%}
+    {% if current_user.act_role == 'student' or current_user.act_role == 'guest'%}
+      {%for a in a%}
+        {%for users in users%}
+        <tr> 
+          {% if a.userID == users.id and a.userID == current_user.id%}
+            <td> {{users.id}}</td>
+            <td> {{users.fname}}</td>
+            <td> {{users.lname}}</td>
+            <td> {{users.act_role}}</td>
+            <td> {{a.status}} </td>
+            {%endif%}
+        </tr>
+        {% endfor %}
+      {% endfor %}
+    {%endif%}
   </tbody>
 </table>
 

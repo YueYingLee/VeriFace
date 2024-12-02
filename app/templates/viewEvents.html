@@ -15,7 +15,7 @@
       </li>
       {% if current_user_role in ["student", "guest"] %}
       <li class="nav-item active">
-        <a class="nav-link" href="/">View Attendance <span class="sr-only"> </span></a>
+        <a class="nav-link" href="/">View Events <span class="sr-only"> </span></a>
       </li>
       {%endif%}
 
@@ -26,6 +26,11 @@
       <li class="nav-item">
         <a class="nav-link" href="/addEvents">Add Events</a>
       </li>
+      {%endif%}
+      {% if current_user_role in ["student", "guest"] %}
+        <li class="nav-item">
+          <a class="nav-link" href="/addtoEvents">Add Events</a>
+        </li>
       {%endif%}
       <li class="nav-item">
         <a class="nav-link" href="/logout">Logout</a>

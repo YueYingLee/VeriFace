@@ -143,7 +143,11 @@ def viewEvents():
         return redirect('/')
     form = ViewEventsForm()
     current_user_role = current_user.act_role
-    events = Event.query.filter_by(hostId=current_user.id) 
+    if current_user.act_role == 'student' or current_user.act_role == 'guest':
+        attendance = Attendance.query.filter_by(userID=current_user.id).first()
+        events = Event.query.filter_by(id = attendance.eventID).all()
+    if current_user.act_role == 'professor':
+        events = Event.query.filter_by(hostId=current_user.id) 
     return render_template('viewEvents.html', form = form , events = events, current_user_role = current_user_role)
 
 @myapp_obj.route("/attendance/<int:id>", methods=['GET', 'POST'])

@@ -13,10 +13,11 @@
       <li class="nav-item active">
         <a class="nav-link" href="/">Home <span class="sr-only"></span></a>
       </li>
-      {% if current_user_role in ["professor", "staff"] %}
+      
         <li class="nav-item">
           <a class="nav-link" href="/viewEvents">View Events</a>
         </li>
+        {% if current_user_role in ["professor", "staff"] %}
         <li class="nav-item">
           <a class="nav-link" href="/addEvents">Add Events</a>
         </li>
@@ -65,14 +66,14 @@
     </div>  
    
     <div class="card" onclick="window.location.href='/viewEvents'"> 
-      <h2> View attendance </h2>
+      <h2> View Events </h2>
     </div>
     {% endif %}
 
     {% if current_user_role in ["student", "guest"] %}
     <div class="single-card">
       <div class="card" onclick="window.location.href='/viewEvents'"> 
-        <h2> View attendance </h2>
+        <h2> View Events </h2>
       </div>
     </div>
     {% endif %}
