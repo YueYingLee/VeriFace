@@ -1,8 +1,6 @@
 import serial
 import time
 
-
-
 def poll_rfid_once(timeout=10):
     """
     Poll the RFID reader for a single scan within the given timeout period.

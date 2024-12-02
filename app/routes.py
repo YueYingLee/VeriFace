@@ -339,8 +339,8 @@ def register():
                     picApprove = 0,
                     roleApprove = 0,
                     reg_role = form.reg_role.data,
-                    act_role = 'admin',
-                    rfid = 1233294 #manually set this for now
+                    act_role = 'guest',
+                    rfid = None #manually set this for now
                 )
                 new.set_password(form.password.data)
                 db.session.add(new)
