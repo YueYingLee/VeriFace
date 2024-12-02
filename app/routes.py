@@ -20,7 +20,8 @@ import cv2
 from .facial_recognition.utils import poll_rfid, display_camera, encode_image
 from .facial_recognition.global_vars import end_event
 
-from .facial_recognition.rfid_handler import poll_rfid_once
+# from .facial_recognition.rfid_handler import poll_rfid_once
+from .facial_recognition.rfid_handler import read_rfid
 import serial
 
 @myapp_obj.route("/", methods=['GET', 'POST'])
@@ -132,6 +133,7 @@ def addtoEvents():
         event = Event.query.filter_by(code =form.code.data).first()
         # attend = Attendance.query.filter_by(eventID= event.id, userID=current_user.id).all() 
         # if attend is None: #check if user is not added then add them to attendance table
+        current_user.events.append(event) ## ADDED
         attendance = Attendance(eventID=event.id, userID=current_user.id, status='absent')
         db.session.add(attendance)
         db.session.commit()
@@ -339,7 +341,7 @@ def register():
                     picApprove = 0,
                     roleApprove = 0,
                     reg_role = form.reg_role.data,
-                    act_role = 'guest',
+                    act_role = 'admin',
                     rfid = None #manually set this for now
                 )
                 new.set_password(form.password.data)
@@ -430,38 +432,55 @@ def stop_attendance():
     end_event.set()
     return redirect('/viewEvents')
 
-latest_rfid_tag = None
+@myapp_obj.route('/trigger_rfid/<int:user_id>', methods=['POST'])
+@login_required
+def trigger_rfid(user_id):
+    print(f"Trigger RFID endpoint hit for user ID: {user_id}")
 
-def poll_rfid_background():
-    """
-    Background thread to continuously poll the RFID reader and store the latest tag.
-    """
-    global latest_rfid_tag
+    # Verify admin privileges
+    if current_user.act_role != "admin":
+        print("Permission denied: Non-admin user attempted to scan RFID.")
+        return {"success": False, "message": "Permission denied."}, 403
+
     try:
-        RFID_PORT = '/dev/ttyUSB0'
-        BAUD_RATE = 9600
-        ser = serial.Serial(RFID_PORT, BAUD_RATE, timeout=1)  # Adjust port and baudrate as needed
-        print("Starting background RFID polling...")
-        while True:
-            rfid_data = ser.readline().decode('utf-8').strip()
-            if rfid_data:
-                latest_rfid_tag = rfid_data  # Update the latest RFID tag
-                print(f"RFID Tag detected: {rfid_data}")
+        # Wait for the RFID tag
+        print("Waiting for RFID scan...")
+        rfid_data = read_rfid(timeout=10)  # Call the read_rfid function
+        print(f"RFID Data from Reader: {rfid_data}")
+
+        if not rfid_data:
+            print("No RFID tag detected within the timeout period.")
+            return {"success": False, "message": "No RFID tag detected. Please try again."}, 400
+
+        # Check if the RFID tag is already assigned to another user
+        existing_user = User.query.filter_by(rfid=rfid_data).first()
+        if existing_user:
+            if existing_user.id == user_id:
+                print(f"RFID tag {rfid_data} is already assigned to this user ({existing_user.username}).")
+                return {"success": False, "message": "RFID tag is already assigned to this user."}, 400
+            else:
+                print(f"RFID tag {rfid_data} is already assigned to another user ({existing_user.username}).")
+                return {
+                    "success": False,
+                    "message": f"RFID tag is already assigned to {existing_user.username}."
+                }, 400
+
+        # Assign the RFID tag to the current user
+        user = User.query.get_or_404(user_id)
+        print(f"Assigning RFID tag {rfid_data} to user {user.username}.")
+        user.rfid = rfid_data
+
+        # Commit the database transaction
+        db.session.commit()
+        print(f"RFID tag {rfid_data} successfully assigned to user {user.username}.")
+        return {"success": True, "rfid_tag": rfid_data}, 200
+
     except Exception as e:
-        print(f"Error in RFID polling: {e}")
+        print(f"Error during RFID assignment: {e}")
+        db.session.rollback()  # Roll back the transaction in case of error
+        return {"success": False, "message": "Error during RFID assignment."}, 500
 
-# Start the background RFID polling thread
-threading.Thread(target=poll_rfid_background, daemon=True).start()
 
-@myapp_obj.route('/get_latest_rfid', methods=['GET'])
-def get_latest_rfid():
-    """
-    Route to fetch the latest scanned RFID tag.
-    """
-    global latest_rfid_tag
-    tag = latest_rfid_tag
-    latest_rfid_tag = None  # Reset after fetching
-    return {"rfid_tag": tag}  # Return as JSON
 
 @myapp_obj.route('/rfid_scan_popup', methods=['GET'])
 def rfid_scan_popup():

@@ -135,39 +135,26 @@
 </table>
 
 <script>
-    function openRfidPopup(userId) {
-        const popup = window.open(
-            "/rfid_scan_popup",
-            "RFID Scanner",
-            "width=400,height=300"
-        );
-
-        window.addEventListener("message", function (event) {
-            if (event.data && event.data.rfid_tag) {
-                const rfidTag = event.data.rfid_tag;
-                console.log("RFID Tag received:", rfidTag);
-
-                // Send the RFID tag to the server to assign it to the user
-                fetch(`/assign_rfid_to_user/${userId}`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ rfid_tag: rfidTag }),
-                })
-                    .then((response) => response.json())
-                    .then((data) => {
-                        if (data.success) {
-                            alert("RFID tag assigned successfully!");
-                            location.reload(); // Reload the page to reflect changes
-                        } else {
-                            alert(data.message || "Error assigning RFID tag.");
-                        }
-                    })
-                    .catch((error) => {
-                        console.error("Error:", error);
-                        alert("Error assigning RFID tag.");
-                    });
+  function openRfidPopup(userId) {
+    console.log(`Starting RFID scan for user ID: ${userId}`);
+    fetch(`/trigger_rfid/${userId}`, {
+        method: "POST",
+    })
+        .then((response) => response.json())
+        .then((data) => {
+            if (data.success) {
+                alert(`RFID tag ${data.rfid_tag} assigned successfully!`);
+                location.reload();  // Reload to reflect changes
+            } else {
+                alert(data.message || "Error assigning RFID tag.");
             }
+        })
+        .catch((error) => {
+            console.error("Error:", error);
+            alert("Error communicating with RFID reader.");
         });
-    }
+}
+
 </script>
+
 {% endblock %}

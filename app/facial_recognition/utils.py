@@ -46,7 +46,7 @@ def encode_image(file):
 
 
 def display_camera():
-    cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture(0) ##
 
     while True:
         ret, frame = cap.read()
@@ -114,7 +114,7 @@ Returns:
 '''
 def connect_serial():
     try:
-        ser = serial.Serial('/dev/tty.usbmodem14101', 9600, timeout=1) # make it dynamically choose the serial port depending on the OS
+        ser = serial.Serial('/dev/ttyUSB0', 9600, timeout=1) # make it dynamically choose the serial port depending on the OS
         time.sleep(2)  # Allow time for the connection to establish
         print(f"Connected to /dev/tty.usbserial-1410")
         return ser
