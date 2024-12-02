@@ -18,6 +18,9 @@ import cv2
 from .facial_recognition.utils import poll_rfid, display_camera, encode_image
 from .facial_recognition.global_vars import end_event
 
+from .facial_recognition.rfid_handler import poll_rfid_once
+import serial
+
 @myapp_obj.route("/", methods=['GET', 'POST'])
 @myapp_obj.route("/login", methods=['GET', 'POST'])
 def login():
@@ -255,8 +258,8 @@ def register():
                     picApprove = 0,
                     roleApprove = 0,
                     reg_role = form.reg_role.data,
-                    act_role = 'guest',
-                    rfid = 1233295 #manually set this for now
+                    act_role = 'admin',
+                    rfid = None #manually set this for now
                 )
                 new.set_password(form.password.data)
                 db.session.add(new)
@@ -267,6 +270,28 @@ def register():
                 flash(str(e))
 
     return render_template('register.html', form=form)
+
+@myapp_obj.route('/assign_rfid_to_user/<int:user_id>', methods=['POST'])
+def assign_rfid_to_user(user_id):
+    data = request.get_json()
+    rfid_tag = data.get("rfid_tag")
+
+    if not rfid_tag:
+        return {"success": False, "message": "No RFID tag provided."}, 400
+
+    user = User.query.get_or_404(user_id)
+
+    # Check if the RFID tag is already assigned
+    existing_user = User.query.filter_by(rfid=rfid_tag).first()
+    if existing_user:
+        return {"success": False, "message": f"RFID tag is already assigned to {existing_user.username}."}, 400
+
+    # Assign the RFID tag to the user
+    user.rfid = rfid_tag
+    db.session.commit()
+
+    return {"success": True}
+
 
 @myapp_obj.route('/download/<int:id>')
 def download(id):
@@ -304,3 +329,40 @@ def start_attendance(id):
 def stop_attendance():
     end_event.set()
     return redirect('/viewEvents')
+
+latest_rfid_tag = None
+
+def poll_rfid_background():
+    """
+    Background thread to continuously poll the RFID reader and store the latest tag.
+    """
+    global latest_rfid_tag
+    try:
+        RFID_PORT = '/dev/ttyUSB0'
+        BAUD_RATE = 9600
+        ser = serial.Serial(RFID_PORT, BAUD_RATE, timeout=1)  # Adjust port and baudrate as needed
+        print("Starting background RFID polling...")
+        while True:
+            rfid_data = ser.readline().decode('utf-8').strip()
+            if rfid_data:
+                latest_rfid_tag = rfid_data  # Update the latest RFID tag
+                print(f"RFID Tag detected: {rfid_data}")
+    except Exception as e:
+        print(f"Error in RFID polling: {e}")
+
+# Start the background RFID polling thread
+threading.Thread(target=poll_rfid_background, daemon=True).start()
+
+@myapp_obj.route('/get_latest_rfid', methods=['GET'])
+def get_latest_rfid():
+    """
+    Route to fetch the latest scanned RFID tag.
+    """
+    global latest_rfid_tag
+    tag = latest_rfid_tag
+    latest_rfid_tag = None  # Reset after fetching
+    return {"rfid_tag": tag}  # Return as JSON
+
+@myapp_obj.route('/rfid_scan_popup', methods=['GET'])
+def rfid_scan_popup():
+    return render_template('rfid_scan.html')  # Save the polling HTML as rfid_scan.html

@@ -19,54 +19,81 @@
     </ul>
   </div>
 </nav>
-</br>
+<br>
 
 <p>{{moment().format('LLL')}}</p>
 
-<div class ="container"> 
-  <div class = "boxing"> 
-    <br>
-    <p> Welcome {{current_user.username}}!</p>
-  </div>
-  <h2>Account Info</h2>
-  <div class = "text">
-    <p>Username: {{current_user.username}}</p>
-    <p>First Name: {{current_user.fname}}</p>
-    <p>Last Name: {{current_user.lname}}</p>
-    <p>Email: {{current_user.email}}</p>
-    <p><a href="download/{{ current_user.id }}">Profile</a></p>
-  </div>
-</div> 
-
-<h2>Users </h2>
-<table>
-  <thread>
-    <tr>
-      <th>Username</th>
-      <th>Requested Role </th>
-      <th>Picture Approval Status</th>
-      <th>User Role Approval Status</th>
-    </tr>
-  </thread>
-  <tbody>
-    {%for users in users%}
-    <tr> 
-      <td> {{users.username}}</td>
-      <td>{{users.reg_role}}</td>
-
-      {%if users.picApprove == 1%}
-      <td><a href="{{url_for('ApprovePicture', id = users.id)}}">Yes Pic</a></td>
-      {%else%}
-      <td><a href="{{url_for('UnPicture', id = users.id)}}">Bad Pic</a></td>
-      {%endif%}
-
-      {%if users.roleApprove == 1%}
-      <td><a href="{{url_for('ApproveUser', id = users.id)}}">Approve Role</a></td>
-      {%else%}
-      <td><a href="{{url_for('UnapproveUser', id = users.id)}}">Change Role</a></td>
-      {%endif%}
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
+<div class="container">
+  <h2>Users</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Username</th>
+        <th>Requested Role</th>
+        <th>Picture Approval Status</th>
+        <th>User Role Approval Status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for user in users %}
+      <tr>
+        <td>{{ user.username }}</td>
+        <td>{{ user.reg_role }}</td>
+        {% if user.picApprove == 1 %}
+        <td><a href="{{ url_for('ApprovePicture', id=user.id) }}">Yes Pic</a></td>
+        {% else %}
+        <td><a href="{{ url_for('UnPicture', id=user.id) }}">Bad Pic</a></td>
+        {% endif %}
+        {% if user.roleApprove == 1 %}
+        <td><a href="{{ url_for('ApproveUser', id=user.id) }}">Approve Role</a></td>
+        {% else %}
+        <td><a href="{{ url_for('UnapproveUser', id=user.id) }}">Change Role</a></td>
+        {% endif %}
+        <td>
+          <button onclick="openRfidPopup('{{ user.id }}')">Scan RFID</button>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  
+  <script>
+      function openRfidPopup(userId) {
+          const popup = window.open(
+              "/rfid_scan_popup",
+              "RFID Scanner",
+              "width=400,height=300"
+          );
+  
+          window.addEventListener("message", function (event) {
+              if (event.data && event.data.rfid_tag) {
+                  const rfidTag = event.data.rfid_tag;
+                  console.log("RFID Tag received:", rfidTag);
+  
+                  // Send the RFID tag to the server to assign it to the user
+                  fetch(`/assign_rfid_to_user/${userId}`, {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ rfid_tag: rfidTag }),
+                  })
+                      .then((response) => response.json())
+                      .then((data) => {
+                          if (data.success) {
+                              alert("RFID tag assigned successfully!");
+                              location.reload(); // Reload the page to reflect changes
+                          } else {
+                              alert(data.message || "Error assigning RFID tag.");
+                          }
+                      })
+                      .catch((error) => {
+                          console.error("Error:", error);
+                          alert("Error assigning RFID tag.");
+                      });
+              }
+          });
+      }
+  </script>
+  
+</div>
 {% endblock %}
