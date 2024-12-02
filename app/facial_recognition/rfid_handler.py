@@ -1,5 +1,6 @@
 import serial
 import time
+from . import global_vars
 
 def read_rfid(timeout=10):
     """
@@ -7,7 +8,7 @@ def read_rfid(timeout=10):
     Continuously polls the RFID reader until a valid tag is detected or the timeout expires.
     """
     try:
-        RFID_PORT = '/dev/ttyUSB0'  # Replace with your RFID reader's port
+        RFID_PORT = global_vars.rfid_port  # Replace with your RFID reader's port
         BAUD_RATE = 9600
         print(f"Connecting to RFID reader on {RFID_PORT} at {BAUD_RATE} baud...")
 
