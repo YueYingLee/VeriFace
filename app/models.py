@@ -45,7 +45,8 @@ class User(db.Model, UserMixin):
 class Event(db.Model, UserMixin):
 
     id = db.Column(db.Integer, primary_key=True)
-    hostId = db.Column(db.Integer, db.ForeignKey('user.id'), nullable = False)
+    code = db.Column(db.String(6), nullable=False) #six length code combo of letters and numbers
+    hostId = db.Column(db.Integer, db.ForeignKey('user.id'), nullable = False) 
     eventName = db.Column(db.String(32), nullable=False)
     date = db.Column(db.Date, default=datetime.utcnow)
     time = db.Column(db.Time, default=datetime.utcnow)

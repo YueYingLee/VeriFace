@@ -17,7 +17,7 @@
         <a class="nav-link" href="/viewEvents">View Events</a>
       </li>
       <li class="nav-item active">
-        <a class="nav-link" href="/addEvents">Add Events<span class="sr-only"></span></a>
+        <a class="nav-link" href="/addtoEvents">Add Events<span class="sr-only"></span></a>
       </li>
       <li class="nav-item">
         <a class="nav-link" href="/logout">Logout</a>
@@ -28,26 +28,12 @@
 </br>
 <div class ="container">
   <div class ="text">
-  <h1>Add New Event</h1>
+  <h1>Add To Event</h1>
   </style>
   <body>
   <form action="" method="POST" novalidate>
       {{form.hidden_tag()}}
   
-      <p> {{form.eventName.label}} <br>
-         {{form.eventName(size=32)}}
-      {%for error in form.eventName.errors%}
-      <span style="color: red;"> [{{error}}]</span>
-      {% endfor %}
-      </p>
-  
-      <div class="page-header">
-        {{form.date (class= "DateTimeField")}}
-      </div>
-
-      <div class="page-header">
-        {{form.time (class= "DateTimeField")}}
-      </div>
 
       <p> {{form.code.label}} <br>
         {{form.code(size=6)}}
@@ -56,12 +42,6 @@
       <span style="color: red;"> [{{error}}]</span>
       {% endfor %}
       </p>
-
-      <div class="form-group">
-        <br>
-        {{ form.users.label }}
-        {{ form.users(class="form-control", multiple="multiple") }}
-    </div>
   
       <p>{{form.submit()}}</p>
       </div>
