@@ -11,10 +11,9 @@ import serial
 import serial.tools.list_ports
 from . import recognition_handler
 import time
-from .global_vars import frame_queue, end_event, rfid_port
+from .global_vars import frame_queue, end_event, rfid_port, baud_rate
 from ..models import Attendance
-from app import db
-from app import myapp_obj
+from app import db, myapp_obj
 
 facial_path = os.path.dirname(os.path.abspath(__file__))                            # Path to facial_recognition/
 app_path = os.path.dirname(facial_path)                                             # Path to app/ 
@@ -115,7 +114,7 @@ Returns:
 '''
 def connect_serial():
     try:
-        ser = serial.Serial(rfid_port, 9600, timeout=1) # make it dynamically choose the serial port depending on the OS
+        ser = serial.Serial(rfid_port, baud_rate, timeout=1) # make it dynamically choose the serial port depending on the OS
         time.sleep(2)  # Allow time for the connection to establish
         print(f"Connected to {rfid_port}")
         return ser

@@ -7,4 +7,8 @@ frame_queue = queue.Queue()
 end_event = Event()
 end_event.clear()   # start with end_event cleared
 
-rfid_port = '/dev/tty.usbmodem14101'
+## RFID variables ##
+# rfid_port = '/dev/tty.usbmodem14101'
+rfid_port = '/dev/ttyUSB0'
+baud_rate = 9600
+
