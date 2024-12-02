@@ -1,6 +1,6 @@
 from flask import render_template, redirect, request, url_for
 from flask import flash, send_file, send_from_directory
-from .forms import LoginForm, LogoutForm, HomeForm, RegisterForm, AdminForm, AddEventsForm, ViewEventsForm, AttendanceForm, viewAttendanceForm
+from .forms import LoginForm, LogoutForm, HomeForm, RegisterForm, AdminForm, AddEventsForm, ViewEventsForm, AttendanceForm, viewAttendanceForm, AddtoEventsForm
 from werkzeug.security import generate_password_hash, check_password_hash
 from .models import User, Event, Attendance
 
@@ -19,6 +19,9 @@ import threading
 import cv2
 from .facial_recognition.utils import poll_rfid, display_camera, encode_image
 from .facial_recognition.global_vars import end_event
+
+from .facial_recognition.rfid_handler import poll_rfid_once
+import serial
 
 @myapp_obj.route("/", methods=['GET', 'POST'])
 @myapp_obj.route("/login", methods=['GET', 'POST'])
@@ -98,7 +101,7 @@ def addEvents():
     form.users.choices = [(user.id, user.username) for user in users]  # Populate users field dynamicallyrm
     if form.validate_on_submit():
         user = User.query.filter_by(username=current_user.username).first()
-        new = Event(hostId = user.id, eventName = form.eventName.data, date = form.date.data, time = form.time.data)
+        new = Event(hostId = user.id, eventName = form.eventName.data, date = form.date.data, time = form.time.data, code = form.code.data)
 
         selected_users_id = form.users.data
         selected_users = User.query.filter(User.id.in_(selected_users_id)).all()
@@ -116,6 +119,28 @@ def addEvents():
         return redirect("/viewEvents")
     return render_template('addEvents.html', form = form)
 
+@myapp_obj.route("/addtoEvents", methods=['GET', 'POST'])
+def addtoEvents():
+    if not current_user.is_authenticated: 
+        flash("You aren't logged in yet!")
+        return redirect('/')
+
+    #Students and guests can add themselves to the event via code
+    form = AddtoEventsForm()
+
+    if form.validate_on_submit():
+        event = Event.query.filter_by(code =form.code.data).first()
+        # attend = Attendance.query.filter_by(eventID= event.id, userID=current_user.id).all() 
+        # if attend is None: #check if user is not added then add them to attendance table
+        attendance = Attendance(eventID=event.id, userID=current_user.id, status='absent')
+        db.session.add(attendance)
+        db.session.commit()
+
+        return redirect("/index")
+    return render_template('addtoEvents.html', form = form)
+
+
+
 @myapp_obj.route("/viewEvents", methods=['GET', 'POST'])
 def viewEvents():
     if not current_user.is_authenticated: 
@@ -123,7 +148,11 @@ def viewEvents():
         return redirect('/')
     form = ViewEventsForm()
     current_user_role = current_user.act_role
-    events = Event.query.filter_by(hostId=current_user.id) 
+    if current_user.act_role == 'student' or current_user.act_role == 'guest':
+        attendance = Attendance.query.filter_by(userID=current_user.id).first()
+        events = Event.query.filter_by(id = attendance.eventID).all()
+    if current_user.act_role == 'professor':
+        events = Event.query.filter_by(hostId=current_user.id) 
     return render_template('viewEvents.html', form = form , events = events, current_user_role = current_user_role)
 
 @myapp_obj.route("/attendance/<int:id>", methods=['GET', 'POST'])
@@ -324,6 +353,28 @@ def register():
     return render_template('register.html', form=form)
 
  
+@myapp_obj.route('/assign_rfid_to_user/<int:user_id>', methods=['POST'])
+def assign_rfid_to_user(user_id):
+    data = request.get_json()
+    rfid_tag = data.get("rfid_tag")
+
+    if not rfid_tag:
+        return {"success": False, "message": "No RFID tag provided."}, 400
+
+    user = User.query.get_or_404(user_id)
+
+    # Check if the RFID tag is already assigned
+    existing_user = User.query.filter_by(rfid=rfid_tag).first()
+    if existing_user:
+        return {"success": False, "message": f"RFID tag is already assigned to {existing_user.username}."}, 400
+
+    # Assign the RFID tag to the user
+    user.rfid = rfid_tag
+    db.session.commit()
+
+    return {"success": True}
+
+
 @myapp_obj.route('/download/<int:id>')
 def download(id):
     img = User.query.filter_by(id=id).first()
@@ -378,3 +429,40 @@ def start_attendance(id):
 def stop_attendance():
     end_event.set()
     return redirect('/viewEvents')
+
+latest_rfid_tag = None
+
+def poll_rfid_background():
+    """
+    Background thread to continuously poll the RFID reader and store the latest tag.
+    """
+    global latest_rfid_tag
+    try:
+        RFID_PORT = '/dev/ttyUSB0'
+        BAUD_RATE = 9600
+        ser = serial.Serial(RFID_PORT, BAUD_RATE, timeout=1)  # Adjust port and baudrate as needed
+        print("Starting background RFID polling...")
+        while True:
+            rfid_data = ser.readline().decode('utf-8').strip()
+            if rfid_data:
+                latest_rfid_tag = rfid_data  # Update the latest RFID tag
+                print(f"RFID Tag detected: {rfid_data}")
+    except Exception as e:
+        print(f"Error in RFID polling: {e}")
+
+# Start the background RFID polling thread
+threading.Thread(target=poll_rfid_background, daemon=True).start()
+
+@myapp_obj.route('/get_latest_rfid', methods=['GET'])
+def get_latest_rfid():
+    """
+    Route to fetch the latest scanned RFID tag.
+    """
+    global latest_rfid_tag
+    tag = latest_rfid_tag
+    latest_rfid_tag = None  # Reset after fetching
+    return {"rfid_tag": tag}  # Return as JSON
+
+@myapp_obj.route('/rfid_scan_popup', methods=['GET'])
+def rfid_scan_popup():
+    return render_template('rfid_scan.html')  # Save the polling HTML as rfid_scan.html

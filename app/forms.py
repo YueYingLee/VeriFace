@@ -52,7 +52,12 @@ class AddEventsForm(FlaskForm):
     eventName = StringField('Event Name', validators=[DataRequired(), validators.Length(max=32)], render_kw={"placeholder": "Event A"})
     date = DateField('Date', format='%Y-%m-%d', default=datetime.now() )
     time = TimeField('Time', format='%H:%M', default=datetime.now())
+    code = StringField('Class Code', validators=[DataRequired(), validators.Length(max=6)], render_kw={"placeholder": "1AA1AA"})
     users = SelectMultipleField('Add Users', coerce=int)  # Multi-select for users
+    submit = SubmitField('Submit')
+
+class AddtoEventsForm(FlaskForm):
+    code = StringField('Class Code', validators=[DataRequired(), validators.Length(max=6)], render_kw={"placeholder": "1AA1AA"})
     submit = SubmitField('Submit')
 
 class ViewEventsForm(FlaskForm):
