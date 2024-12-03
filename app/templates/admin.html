@@ -124,7 +124,12 @@
       </form>   {%else%}
           User need to be approved for this feature.
       <br> 
-      {% endif%} </td>
+      {% endif%} <form action="{{ url_for('delete_user', user_id=users.id) }}" method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this user?');">
+        <button type="submit">Delete</button>
+    </form> </td>
+       <!--After approval, admin can choose delete user -->
+       
+    <br> 
       <td>
         <button onclick="openRfidPopup('{{ users.id }}')">Scan RFID</button>
       </td>

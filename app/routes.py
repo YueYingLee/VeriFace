@@ -259,8 +259,23 @@ def UnapproveUser(id):
                 else:
                         flash("User already unapproved!", category ='error')
             else:
-                flash('You do not have permission to unapprove users.' , category ='error')
+                flash('You do not have permission to unapprove users.' , category ='error') 
     return redirect("/index")
+
+@myapp_obj.route("/delete_user/<int:user_id>", methods=["POST"])
+def delete_user(user_id):
+    if request.method == "POST":
+        if current_user.act_role == 'admin': #User can only delete user if they are admin. Else, error message will be popped out
+          user = User.query.get(user_id)
+          if user: #if the user is found in database, delete the user and commit the change of the session
+            db.session.delete(user)
+            db.session.commit()
+            flash("User deleted successfully!", category = 'success')
+          else:
+            flash("User not found!", category ='error')
+        else:
+             flash('You do not have permission to delete users.' , category ='error')
+    return redirect(url_for("index"))
 
 @myapp_obj.route("/change_user_role/<int:user_id>", methods=["GET", "POST"])
 def change_user_role(user_id):
