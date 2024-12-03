@@ -1,9 +1,9 @@
 import serial
-
+from app.facial_recognition import global_vars
 
 def main():
     try:
-        RFID_PORT = '/dev/ttyUSB0'
+        RFID_PORT = global_vars.rfid_port
         BAUD_RATE = 9600
         print(f"Connecting to RFID reader on {RFID_PORT} at {BAUD_RATE} baud...")
         with serial.Serial(RFID_PORT, BAUD_RATE, timeout=10) as ser:  # 10-second timeout

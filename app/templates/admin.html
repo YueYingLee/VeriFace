@@ -2,6 +2,19 @@
 {% block content %}
 <head>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
+    <script>
+      // JavaScript function to update the clock dynamically
+      function updateClock() {
+          const now = new Date();
+          const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' };
+          document.getElementById('dynamicClock').innerHTML = now.toLocaleDateString('en-US', options);
+      }
+
+      // Call the updateClock function every second
+      setInterval(updateClock, 1000);
+      // Initialize the clock when the page loads
+      window.onload = updateClock;
+  </script>
 </head>
 <nav class="navbar navbar-expand-lg navbar-light">
   <a class="navbar-brand" href="/">VeriFace</a>
@@ -21,7 +34,11 @@
 </nav>
 <br>
 
-<p>{{moment().format('LLL')}}</p>
+<!-- Dynamic Clock -->
+<div class="clock-container">
+  <p id="dynamicClock" style="font-size: 15px; font-weight: bold;"></p>
+</div>
+
 <p> Welcome {{current_user.username}}!</p>
 <div class ="container"> 
   <div class = "boxing"> 
@@ -139,39 +156,26 @@
 </table>
 
 <script>
-    function openRfidPopup(userId) {
-        const popup = window.open(
-            "/rfid_scan_popup",
-            "RFID Scanner",
-            "width=400,height=300"
-        );
-
-        window.addEventListener("message", function (event) {
-            if (event.data && event.data.rfid_tag) {
-                const rfidTag = event.data.rfid_tag;
-                console.log("RFID Tag received:", rfidTag);
-
-                // Send the RFID tag to the server to assign it to the user
-                fetch(`/assign_rfid_to_user/${userId}`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ rfid_tag: rfidTag }),
-                })
-                    .then((response) => response.json())
-                    .then((data) => {
-                        if (data.success) {
-                            alert("RFID tag assigned successfully!");
-                            location.reload(); // Reload the page to reflect changes
-                        } else {
-                            alert(data.message || "Error assigning RFID tag.");
-                        }
-                    })
-                    .catch((error) => {
-                        console.error("Error:", error);
-                        alert("Error assigning RFID tag.");
-                    });
+  function openRfidPopup(userId) {
+    console.log(`Starting RFID scan for user ID: ${userId}`);
+    fetch(`/trigger_rfid/${userId}`, {
+        method: "POST",
+    })
+        .then((response) => response.json())
+        .then((data) => {
+            if (data.success) {
+                alert(`RFID tag ${data.rfid_tag} assigned successfully!`);
+                location.reload();  // Reload to reflect changes
+            } else {
+                alert(data.message || "Error assigning RFID tag.");
             }
+        })
+        .catch((error) => {
+            console.error("Error:", error);
+            alert("Error communicating with RFID reader.");
         });
-    }
+}
+
 </script>
+
 {% endblock %}

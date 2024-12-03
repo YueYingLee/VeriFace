@@ -1,37 +1,42 @@
 import serial
 import time
+from . import global_vars
 
-
-
-def poll_rfid_once(timeout=10):
+def read_rfid(timeout=10):
     """
-    Poll the RFID reader for a single scan within the given timeout period.
-    :param timeout: The time in seconds to wait for an RFID tag.
-    :return: The scanned RFID tag, or None if no tag was scanned within the timeout.
+    Reads RFID data within a given timeout window.
+    Continuously polls the RFID reader until a valid tag is detected or the timeout expires.
     """
     try:
-        RFID_PORT = '/dev/ttyUSB0'
-        BAUD_RATE = 9600
+        RFID_PORT = global_vars.rfid_port
+        BAUD_RATE = global_vars.baud_rate
         print(f"Connecting to RFID reader on {RFID_PORT} at {BAUD_RATE} baud...")
 
-        # Replace 'COM5' with your Arduino's serial port
-        ser = serial.Serial(RFID_PORT, BAUD_RATE, timeout=1)  # 1-second serial timeout
+        # Open the serial connection to the RFID reader
+        ser = serial.Serial(RFID_PORT, BAUD_RATE, timeout=1)
+
+        # Clear the serial buffer to avoid stale data
+        ser.flushInput()
+        ser.flushOutput()
+
         print("Waiting for RFID scan...")
-        
         start_time = time.time()
+
         while True:
+            # Check if the timeout has been reached
             if time.time() - start_time > timeout:
                 print("RFID scan timed out.")
                 ser.close()
-                return None  # Return None if timeout occurs
+                return None
 
-            # Read a line from the RFID reader
+            # Read data from the RFID reader
             rfid_tag = ser.readline().decode('utf-8').strip()
+            print(f"Raw RFID data: {rfid_tag}")  # Log raw data for debugging
 
-            if rfid_tag:
-                print(f"RFID Tag Scanned: {rfid_tag}\n")
+            if rfid_tag and len(rfid_tag) == 8:  # Validate the tag length
+                print(f"Valid RFID Tag Detected: {rfid_tag}")
                 ser.close()
-                return rfid_tag  # Return the scanned RFID tag if found
+                return rfid_tag
 
     except serial.SerialException as e:
         print(f"Serial error: {e}")

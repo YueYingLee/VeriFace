@@ -1,5 +1,4 @@
 from flask_wtf import FlaskForm
-from flask import render_template
 from wtforms import StringField, PasswordField, SubmitField, FileField, validators
 from wtforms.validators import DataRequired, EqualTo
 from wtforms.fields import DateField, TimeField, SelectField, SelectMultipleField

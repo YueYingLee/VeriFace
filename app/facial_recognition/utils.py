@@ -11,9 +11,9 @@ import serial
 import serial.tools.list_ports
 from . import recognition_handler
 import time
-from .global_vars import frame_queue, end_event
+from .global_vars import frame_queue, end_event, rfid_port, baud_rate
 from ..models import Attendance
-from app import db
+from app import db, myapp_obj
 
 facial_path = os.path.dirname(os.path.abspath(__file__))                            # Path to facial_recognition/
 app_path = os.path.dirname(facial_path)                                             # Path to app/ 
@@ -23,7 +23,7 @@ supported_extensions = ('.jpg', '.jpeg', '.png')
 
 def encode_image(file):
     # if invalid extension type
-    if not file.filename.endswith(supported_extensions):
+    if not file.filename.lower().endswith(supported_extensions):
         raise ValueError(f'Invalid file type! Supported types are {supported_extensions}')
     
     # process file and encode it
@@ -46,7 +46,7 @@ def encode_image(file):
 
 
 def display_camera():
-    cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture(0) ##
 
     while True:
         ret, frame = cap.read()
@@ -114,9 +114,9 @@ Returns:
 '''
 def connect_serial():
     try:
-        ser = serial.Serial('/dev/tty.usbmodem14101', 9600, timeout=1) # make it dynamically choose the serial port depending on the OS
+        ser = serial.Serial(rfid_port, baud_rate, timeout=1) # make it dynamically choose the serial port depending on the OS
         time.sleep(2)  # Allow time for the connection to establish
-        print(f"Connected to /dev/tty.usbserial-1410")
+        print(f"Connected to {rfid_port}")
         return ser
 
     except serial.SerialException as e:
@@ -164,7 +164,8 @@ def mark_attendance(user):
         writer.writerow(row)
         
         #figure out how to get eventID
-
+        
+    with myapp_obj.app_context():
         attendance = Attendance(eventID=1, userID=user.id, status='present')
         db.session.add(attendance)
         db.session.commit()
