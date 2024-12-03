@@ -149,7 +149,10 @@ def viewEvents():
     current_user_role = current_user.act_role
     if current_user.act_role == 'student' or current_user.act_role == 'guest':
         attendance = Attendance.query.filter_by(userID=current_user.id).first()
-        events = Event.query.filter_by(id = attendance.eventID).all()
+        if attendance is not None:
+            events = Event.query.filter_by(id = attendance.eventID).all()
+        else:
+            events = Event.query.filter_by(id = '0').all()
     if current_user.act_role == 'professor':
         events = Event.query.filter_by(hostId=current_user.id) 
     return render_template('viewEvents.html', form = form , events = events, current_user_role = current_user_role)
@@ -350,11 +353,11 @@ def register():
                     email = form.email.data,
                     file = file.filename,
                     data=encode,
-                    picApprove = 0,
-                    roleApprove = 0,
+                    picApprove = 1,
+                    roleApprove = 1, #0 is true and 1 is false
                     reg_role = form.reg_role.data,
-                    act_role = 'admin',
-                    rfid = None #manually set this for now
+                    act_role = 'guest',
+                    rfid = None # to be set later by admin
                 )
                 new.set_password(form.password.data)
                 db.session.add(new)
