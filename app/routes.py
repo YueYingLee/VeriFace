@@ -458,7 +458,7 @@ def start_attendance(id):
     users_in_event = User.query.filter(User.events.any(id=id)).all()
     # Initialize and start threads
     camera_thread = threading.Thread(target=display_camera, daemon=True)
-    rfid_thread = threading.Thread(target=poll_rfid, args=(users_in_event,), daemon=True)
+    rfid_thread = threading.Thread(target=poll_rfid, args=(users_in_event,id), daemon=True)
     
     camera_thread.start()
     rfid_thread.start()

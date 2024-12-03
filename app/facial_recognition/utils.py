@@ -14,6 +14,7 @@ import time
 from .global_vars import frame_queue, end_event, rfid_port, baud_rate
 from ..models import Attendance
 from app import db, myapp_obj
+from sqlalchemy import update
 
 facial_path = os.path.dirname(os.path.abspath(__file__))                            # Path to facial_recognition/
 app_path = os.path.dirname(facial_path)                                             # Path to app/ 
@@ -79,7 +80,7 @@ Parameters:
     - users: a list of all users that are part of the event
     - cap: instance of OpenCV video capture
 '''
-def poll_rfid(users):
+def poll_rfid(users,id):
     ser = connect_serial()
 
     while not end_event.is_set():
@@ -95,7 +96,7 @@ def poll_rfid(users):
 
                 if verified_user:
                     print('Verified user! Marking attendance...')
-                    mark_attendance(verified_user)
+                    mark_attendance(verified_user,id)
                 else:
                     print('Face not recognized or timed out. Please rescan RFID and try again.')
 
@@ -146,7 +147,7 @@ def is_valid_for_event(rfid_data, users):
     return rfid_data in rfid_list
 
 
-def mark_attendance(user):
+def mark_attendance(user,id):
     current_datetime = datetime.now().strftime("%B %d, %Y %I:%M:%S %p")
     current_date = datetime.now().strftime("%m-%d-%Y")
     filename = os.path.join(attendance_path, current_date) + '.csv'
@@ -166,8 +167,17 @@ def mark_attendance(user):
         #figure out how to get eventID
         
     with myapp_obj.app_context():
-        attendance = Attendance(eventID=1, userID=user.id, status='present')
-        db.session.add(attendance)
+        # attendance = Attendance(eventID=id, userID=user.id, status='present') adds new row
+        # db.session.add(attendance)
+        #test 1
+        attendance = Attendance.query.filter_by(eventID=id, userID=user.id).one()
+        attendance.status = 'present'
         db.session.commit()
+
+        #test 2
+        # a = update(Attendance)
+        # a = a.values(status = 'present')
+        # a. a.where(eventID = id, userID=user.id)
+        # db.session.commit()
 
         print(f'Marked attendance for {row["Name"]}')
