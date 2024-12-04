@@ -16,13 +16,10 @@ from flask_moment import Moment
 from flask import Response
 
 import threading
-import cv2
 from .facial_recognition.utils import poll_rfid, display_camera, encode_image
 from .facial_recognition.global_vars import end_event
 
-# from .facial_recognition.rfid_handler import poll_rfid_once
 from .facial_recognition.rfid_handler import read_rfid
-import serial
 
 @myapp_obj.route("/", methods=['GET', 'POST'])
 @myapp_obj.route("/login", methods=['GET', 'POST'])
@@ -152,7 +149,10 @@ def viewEvents():
     current_user_role = current_user.act_role
     if current_user.act_role == 'student' or current_user.act_role == 'guest':
         attendance = Attendance.query.filter_by(userID=current_user.id).first()
-        events = Event.query.filter_by(id = attendance.eventID).all()
+        if attendance is not None:
+            events = Event.query.filter_by(id = attendance.eventID).all()
+        else:
+            events = Event.query.filter_by(id = '0').all()
     if current_user.act_role == 'professor':
         events = Event.query.filter_by(hostId=current_user.id) 
     return render_template('viewEvents.html', form = form , events = events, current_user_role = current_user_role)
@@ -261,8 +261,23 @@ def UnapproveUser(id):
                 else:
                         flash("User already unapproved!", category ='error')
             else:
-                flash('You do not have permission to unapprove users.' , category ='error')
+                flash('You do not have permission to unapprove users.' , category ='error') 
     return redirect("/index")
+
+@myapp_obj.route("/delete_user/<int:user_id>", methods=["POST"])
+def delete_user(user_id):
+    if request.method == "POST":
+        if current_user.act_role == 'admin': #User can only delete user if they are admin. Else, error message will be popped out
+          user = User.query.get(user_id)
+          if user: #if the user is found in database, delete the user and commit the change of the session
+            db.session.delete(user)
+            db.session.commit()
+            flash("User deleted successfully!", category = 'success')
+          else:
+            flash("User not found!", category ='error')
+        else:
+             flash('You do not have permission to delete users.' , category ='error')
+    return redirect(url_for("index"))
 
 @myapp_obj.route("/change_user_role/<int:user_id>", methods=["GET", "POST"])
 def change_user_role(user_id):
@@ -338,11 +353,11 @@ def register():
                     email = form.email.data,
                     file = file.filename,
                     data=encode,
-                    picApprove = 0,
-                    roleApprove = 0,
+                    picApprove = 1,
+                    roleApprove = 1, #0 is true and 1 is false
                     reg_role = form.reg_role.data,
-                    act_role = 'admin',
-                    rfid = None #manually set this for now
+                    act_role = 'guest',
+                    rfid = None # to be set later by admin
                 )
                 new.set_password(form.password.data)
                 db.session.add(new)
@@ -353,84 +368,6 @@ def register():
                 flash(str(e))
 
     return render_template('register.html', form=form)
-
- 
-@myapp_obj.route('/assign_rfid_to_user/<int:user_id>', methods=['POST'])
-def assign_rfid_to_user(user_id):
-    data = request.get_json()
-    rfid_tag = data.get("rfid_tag")
-
-    if not rfid_tag:
-        return {"success": False, "message": "No RFID tag provided."}, 400
-
-    user = User.query.get_or_404(user_id)
-
-    # Check if the RFID tag is already assigned
-    existing_user = User.query.filter_by(rfid=rfid_tag).first()
-    if existing_user:
-        return {"success": False, "message": f"RFID tag is already assigned to {existing_user.username}."}, 400
-
-    # Assign the RFID tag to the user
-    user.rfid = rfid_tag
-    db.session.commit()
-
-    return {"success": True}
-
-
-@myapp_obj.route('/download/<int:id>')
-def download(id):
-    img = User.query.filter_by(id=id).first()
-    return send_file(BytesIO(img.data),
-                     download_name=img.file, as_attachment=False) #change to true if want it to be downloaded auto; false rn to display on browser
-
-'''
-
-@myapp_obj.route('/download/<int:id>')
-def download(id):
-    img = User.query.filter_by(id=id).first()
-
-    if not img or not img.data:
-        return "Image not found", 404
-
-    # Determine MIME type dynamically based on file extension
-    mimetype, _ = guess_type(img.file)
-    mimetype = mimetype or "application/octet-stream"  # Fallback MIME type
-
-    return send_file(
-        BytesIO(img.data),
-        mimetype=mimetype,
-        download_name=img.file if img.file else f"user_{id}.jpg",
-        as_attachment=False
-    )
- 
-The idea is:
-    - constantly poll for RFID scans
-    - if nothing is scanned, camera just stays on and does nothing
-    - once there is a scan, stop scanning for any more RFID
-        - check if that ID is registered for this current event
-        - using that ID, start the facial recognition process to only look for the user associated with that ID
-            - if it takes too long, we can make it timeout so they have to scan RFID again (prevents infinite loop if no face matches)
-        - if face verified, mark attendance, and break out of facial recognition function, and go back to polling for RFID scans
-            - camera stays on the whole time until admin quits
-'''
-@myapp_obj.route('/start-attendance/<int:id>')
-def start_attendance(id):
-    users_in_event = User.query.filter(User.events.any(id=id)).all()
-    # Initialize and start threads
-    camera_thread = threading.Thread(target=display_camera, daemon=True)
-    rfid_thread = threading.Thread(target=poll_rfid, args=(users_in_event,), daemon=True)
-    
-    camera_thread.start()
-    rfid_thread.start()
-    #link these both to start button and create stop functions for both
-
-    return Response(display_camera(),
-                    mimetype='multipart/x-mixed-replace; boundary=frame')
-
-@myapp_obj.route('/stop-attendance')
-def stop_attendance():
-    end_event.set()
-    return redirect('/viewEvents')
 
 @myapp_obj.route('/trigger_rfid/<int:user_id>', methods=['POST'])
 @login_required
@@ -480,8 +417,57 @@ def trigger_rfid(user_id):
         db.session.rollback()  # Roll back the transaction in case of error
         return {"success": False, "message": "Error during RFID assignment."}, 500
 
+@myapp_obj.route('/download/<int:id>')
+def download(id):
+    img = User.query.filter_by(id=id).first()
+    return send_file(BytesIO(img.data),
+                     download_name=img.file, as_attachment=False) #change to true if want it to be downloaded auto; false rn to display on browser
 
+'''
 
-@myapp_obj.route('/rfid_scan_popup', methods=['GET'])
-def rfid_scan_popup():
-    return render_template('rfid_scan.html')  # Save the polling HTML as rfid_scan.html
+@myapp_obj.route('/download/<int:id>')
+def download(id):
+    img = User.query.filter_by(id=id).first()
+
+    if not img or not img.data:
+        return "Image not found", 404
+
+    # Determine MIME type dynamically based on file extension
+    mimetype, _ = guess_type(img.file)
+    mimetype = mimetype or "application/octet-stream"  # Fallback MIME type
+
+    return send_file(
+        BytesIO(img.data),
+        mimetype=mimetype,
+        download_name=img.file if img.file else f"user_{id}.jpg",
+        as_attachment=False
+    )
+ 
+The idea is:
+    - constantly poll for RFID scans
+    - if nothing is scanned, camera just stays on and does nothing
+    - once there is a scan, stop scanning for any more RFID
+        - check if that ID is registered for this current event
+        - using that ID, start the facial recognition process to only look for the user associated with that ID
+            - if it takes too long, we can make it timeout so they have to scan RFID again (prevents infinite loop if no face matches)
+        - if face verified, mark attendance, and break out of facial recognition function, and go back to polling for RFID scans
+            - camera stays on the whole time until admin quits
+'''
+@myapp_obj.route('/start-attendance/<int:id>')
+def start_attendance(id):
+    users_in_event = User.query.filter(User.events.any(id=id)).all()
+    # Initialize and start threads
+    camera_thread = threading.Thread(target=display_camera, daemon=True)
+    rfid_thread = threading.Thread(target=poll_rfid, args=(users_in_event,id), daemon=True)
+    
+    camera_thread.start()
+    rfid_thread.start()
+    #link these both to start button and create stop functions for both
+
+    return Response(display_camera(),
+                    mimetype='multipart/x-mixed-replace; boundary=frame')
+
+@myapp_obj.route('/stop-attendance')
+def stop_attendance():
+    end_event.set()
+    return redirect('/viewEvents')

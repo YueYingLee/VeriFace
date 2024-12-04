@@ -1,7 +1,6 @@
 import serial
 from app.facial_recognition import global_vars
 
-
 def main():
     try:
         RFID_PORT = global_vars.rfid_port
