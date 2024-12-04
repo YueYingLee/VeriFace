@@ -9,7 +9,7 @@ import os
 import datetime
 
 RECOGNITION_THRESHOLD = 0.5     # if the difference in comparision is under this threshold --> face is a match
-CONFIRM_FACE = 8               # must verify face for this many frames prevent a false match
+CONFIRM_FACE = 5               # must verify face for this many frames prevent a false match
 FRAME_INTERVAL = 2              # run encoding algorithm in intervals to prevent camera lag
 IMAGE_SCALE_FACTOR = 0.33       # scale image down by this factor to improve encoding performance
 TIMEOUT_SECONDS = 10            # timeout in seconds to prevent infinite scanning
