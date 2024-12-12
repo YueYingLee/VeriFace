@@ -159,11 +159,6 @@ def viewEvents():
 
 @myapp_obj.route("/attendance/<int:id>", methods=['GET', 'POST'])
 def attendance(id):
-    # if not current_user.is_authenticated: 
-    #     flash("You aren't logged in yet!")
-    #     return redirect('/')
-    # event = Event.query.get(id) 
-    # return redirect('/start/<int:id>', event = event)
     if not current_user.is_authenticated: 
         flash("You aren't logged in yet!")
         return redirect('/')
@@ -430,36 +425,6 @@ def download(id):
     return send_file(BytesIO(img.data),
                      download_name=img.file, as_attachment=False) #change to true if want it to be downloaded auto; false rn to display on browser
 
-'''
-
-@myapp_obj.route('/download/<int:id>')
-def download(id):
-    img = User.query.filter_by(id=id).first()
-
-    if not img or not img.data:
-        return "Image not found", 404
-
-    # Determine MIME type dynamically based on file extension
-    mimetype, _ = guess_type(img.file)
-    mimetype = mimetype or "application/octet-stream"  # Fallback MIME type
-
-    return send_file(
-        BytesIO(img.data),
-        mimetype=mimetype,
-        download_name=img.file if img.file else f"user_{id}.jpg",
-        as_attachment=False
-    )
- 
-The idea is:
-    - constantly poll for RFID scans
-    - if nothing is scanned, camera just stays on and does nothing
-    - once there is a scan, stop scanning for any more RFID
-        - check if that ID is registered for this current event
-        - using that ID, start the facial recognition process to only look for the user associated with that ID
-            - if it takes too long, we can make it timeout so they have to scan RFID again (prevents infinite loop if no face matches)
-        - if face verified, mark attendance, and break out of facial recognition function, and go back to polling for RFID scans
-            - camera stays on the whole time until admin quits
-'''
 @myapp_obj.route('/start-attendance/<int:id>')
 def start_attendance(id):
     users_in_event = User.query.filter(User.events.any(id=id)).all()
