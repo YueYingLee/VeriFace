@@ -3,164 +3,157 @@
 <head>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
     <script>
-      // JavaScript function to update the clock dynamically
-      function updateClock() {
-          const now = new Date();
-          const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' };
-          document.getElementById('dynamicClock').innerHTML = now.toLocaleDateString('en-US', options);
-      }
+        // JavaScript function to update the clock dynamically
+        function updateClock() {
+            const now = new Date();
+            const options = {
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric', 
+                hour: '2-digit', 
+                minute: '2-digit', 
+                second: '2-digit'
+            };
+            document.getElementById('dynamicClock').innerHTML = now.toLocaleDateString('en-US', options);
+        }
 
-      // Call the updateClock function every second
-      setInterval(updateClock, 1000);
-      // Initialize the clock when the page loads
-      window.onload = updateClock;
-  </script>
+        // Call the updateClock function every second
+        setInterval(updateClock, 1000);
+        // Initialize the clock when the page loads
+        window.onload = updateClock;
+    </script>
 </head>
+
 <nav class="navbar navbar-expand-lg navbar-light">
-  <a class="navbar-brand" href="/">VeriFace</a>
-  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-    <span class="navbar-toggler-icon"></span>
-  </button>
-  <div class="collapse navbar-collapse" id="navbarNav">
-    <ul class="navbar-nav">
-      <li class="nav-item active">
-        <a class="nav-link" href="/">Home <span class="sr-only"></span></a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="/logout">Logout</a>
-      </li>
-    </ul>
-  </div>
+    <a class="navbar-brand" href="/">VeriFace</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav">
+            <li class="nav-item active">
+                <a class="nav-link" href="/">Home <span class="sr-only"></span></a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/logout">Logout</a>
+            </li>
+        </ul>
+    </div>
 </nav>
 <br>
 
 <!-- Dynamic Clock -->
 <div class="clock-container">
-  <p id="dynamicClock" style="font-size: 15px; font-weight: bold;"></p>
+    <p id="dynamicClock" style="font-size: 15px; font-weight: bold;"></p>
 </div>
 
-<p> Welcome {{current_user.username}}!</p>
-<div class ="container"> 
-  <div class = "boxing"> 
-    <br>
-  </div>
-  <h2>Account Info</h2>
-  <div class = "text">
-    <p>Username: {{current_user.username}}</p>
-    <p>First Name: {{current_user.fname}}</p>
-    <p>Last Name: {{current_user.lname}}</p>
-    <p>Email: {{current_user.email}}</p>
-     <p><a href="download/{{ current_user.id }}">Profile</a></p>  
-   <!--<img src="data:image/jpeg;base64,{{ image }}" alt="Profile Picture" style="max-width: 300px;">  -->
-     
-  </div>
-</div> 
+<p>Welcome {{ current_user.username }}!</p>
 
-<h2>Users </h2>
+<div class="container">
+    <div class="boxing">
+        <br>
+    </div>
+    <h2>Account Info</h2>
+    <div class="text">
+        <p>Username: {{ current_user.username }}</p>
+        <p>First Name: {{ current_user.fname }}</p>
+        <p>Last Name: {{ current_user.lname }}</p>
+        <p>Email: {{ current_user.email }}</p>
+        <p><a href="download/{{ current_user.id }}">Profile</a></p>
+        <!-- <img src="data:image/jpeg;base64,{{ image }}" alt="Profile Picture" style="max-width: 300px;"> -->
+    </div>
+</div>
+
+<h2>Users</h2>
 <table>
-  <thread>
-    <tr>
-      <th>Username</th>
-      <th>Requested Role </th>
-      <th>Current Role </th>
-      <th>Picture Approval Status</th>
-      <th>Change Picture Approval</th>
-      <th>Role Approval status</th>
-      <th>Change Role approval </th>
-      <th>Actions</th>
-      <th>RFID status</th>
-    </tr>
-  </thread>
-  <tbody>
-    {%for users in users%}
-    <tr> 
-      <td> {{users.username}}</td>
-      <td>{{users.reg_role}}</td>
-      <td>{{users.act_role}}</td>
-      <td> {% if users.picApprove == 0 %}
-        Yes     
-      {%else%}
-        No
-      {% endif%}
-  </td>
-    <td> 
-    <!-- Approving actions-->
-    {% if users.act_role != "admin" %}
-    {% if users.picApprove == 1 %}
-    <form action="{{ url_for('ApprovePicture', id=users.id) }}" method="POST" style="display: inline;">
-        <button type="submit" class="submit-button" >Approve</button>
-    </form>
-    {%else%}
-    <!-- Unapprove actions-->
-    <form action="{{ url_for('UnPicture', id=users.id) }}" method="POST" style="display: inline;">
-        <button type="submit" class="submit-button" >Unapprove</button>
-    </form>
-    {%endif%}
-    {%else%}
-      Admin can't be disapproved for picture.
-    {% endif%}
-  </td> 
-
-       <!-- -->
-      <td> {% if users.roleApprove == 0 %}
-          Yes     
-        {%else%}
-          No
-        {% endif%}
-    </td>
-      <td> 
-      <!-- Approving actions-->
-      {% if users.act_role != "admin" %}
-      {% if users.roleApprove == 1 %}
-      <form action="{{ url_for('ApproveUser', id=users.id) }}" method="POST" style="display: inline;">
-          <button type="submit" class="submit-button" >Approve</button>
-      </form>
-      {%else%}
-      <!-- Unapprove actions-->
-      <form action="{{ url_for('UnapproveUser', id=users.id) }}" method="POST" style="display: inline;">
-          <button type="submit" class="submit-button" >Unapprove</button>
-      </form>
-      {%endif%}
-      {%else%}
-        Admin can't be disapproved.
-      {% endif%}
-    </td> 
-    <td>
-      {% if users.roleApprove == 0 %}  
-        <!-- After approval, admin can also choose to change the user role --> 
-        <form action="{{ url_for('change_user_role', user_id =users.id) }}" method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to change the role for this user?');">
-          <select name="new_role">
-              <option disabled selected>Choose</option> 
-              <option value="admin">Admin</option>
-              <option value="professor">Professor</option>
-              <option value="staff">Staff</option>
-              <option value="student">Student</option>
-              <option value="guest">Guest</option>
-          </select>
-          <button type="submit">Change Role</button>
-      </form>   {%else%}
-          User need to be approved before role changes.
-      <br> 
-      {% endif%} <form action="{{ url_for('delete_user', user_id=users.id) }}" method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this user?');">
-        <button type="submit">Delete</button>
-    </form> </td>
-       <!--After approval, admin can choose delete user -->
-       
-    <br> 
-      <td>
-        <button onclick="openRfidPopup('{{ users.id }}')">Scan RFID</button>
-      </td>
-    </tr>
-    {% endfor %}
-  </tbody>
+    <thead>
+        <tr>
+            <th>Username</th>
+            <th>Requested Role</th>
+            <th>Current Role</th>
+            <th>Picture Approval Status</th>
+            <th>Change Picture Approval</th>
+            <th>Role Approval Status</th>
+            <th>Change Role Approval</th>
+            <th>Actions</th>
+            <th>RFID No</th>
+            <th>RFID Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for users in users %}
+        <tr>
+            <td>{{ users.username }}</td>
+            <td>{{ users.reg_role }}</td>
+            <td>{{ users.act_role }}</td>
+            <td>{% if users.picApprove == 0 %} Yes {% else %} No {% endif %}</td>
+            <td>
+                {% if users.act_role != "admin" %}
+                    {% if users.picApprove == 1 %}
+                    <form action="{{ url_for('ApprovePicture', id=users.id) }}" method="POST" style="display: inline;">
+                        <button type="submit" class="submit-button">Approve</button>
+                    </form>
+                    {% else %}
+                    <form action="{{ url_for('UnPicture', id=users.id) }}" method="POST" style="display: inline;">
+                        <button type="submit" class="submit-button">Unapprove</button>
+                    </form>
+                    {% endif %}
+                {% else %}
+                    Admin can't be disapproved for picture.
+                {% endif %}
+            </td>
+            <td>{% if users.roleApprove == 0 %} Yes {% else %} No {% endif %}</td>
+            <td>
+                {% if users.act_role != "admin" %}
+                    {% if users.roleApprove == 1 %}
+                    <form action="{{ url_for('ApproveUser', id=users.id) }}" method="POST" style="display: inline;">
+                        <button type="submit" class="submit-button">Approve</button>
+                    </form>
+                    {% else %}
+                    <form action="{{ url_for('UnapproveUser', id=users.id) }}" method="POST" style="display: inline;">
+                        <button type="submit" class="submit-button">Unapprove</button>
+                    </form>
+                    {% endif %}
+                {% else %}
+                    Admin can't be disapproved.
+                {% endif %}
+            </td>
+            <td>
+                {% if users.roleApprove == 0 %}
+                <form action="{{ url_for('change_user_role', user_id=users.id) }}" method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to change the role for this user?');">
+                    <select name="new_role">
+                        <option disabled selected>Choose</option>
+                        <option value="admin">Admin</option>
+                        <option value="professor">Professor</option>
+                        <option value="staff">Staff</option>
+                        <option value="student">Student</option>
+                        <option value="guest">Guest</option>
+                    </select>
+                    <button type="submit">Change Role</button>
+                </form>
+                {% else %}
+                User needs to be approved before role changes.<br>
+                {% endif %}
+                <form action="{{ url_for('delete_user', user_id=users.id) }}" method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this user?');">
+                    <button type="submit">Delete</button>
+                </form>
+            </td>
+            <td>{% if users.rfid %} {{ users.rfid }} {% else %} To be assigned {% endif %}</td>
+            <td>
+                <button onclick="openRfidPopup('{{ users.id }}')">Scan RFID</button>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
 </table>
 
 <script>
-  function openRfidPopup(userId) {
-    console.log(`Starting RFID scan for user ID: ${userId}`);
-    fetch(`/trigger_rfid/${userId}`, {
-        method: "POST",
-    })
+    function openRfidPopup(userId) {
+        console.log(`Starting RFID scan for user ID: ${userId}`);
+        fetch(`/trigger_rfid/${userId}`, {
+            method: "POST",
+        })
         .then((response) => response.json())
         .then((data) => {
             if (data.success) {
@@ -174,8 +167,6 @@
             console.error("Error:", error);
             alert("Error communicating with RFID reader.");
         });
-}
-
+    }
 </script>
-
 {% endblock %}

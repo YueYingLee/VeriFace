@@ -282,24 +282,31 @@ def delete_user(user_id):
 @myapp_obj.route("/change_user_role/<int:user_id>", methods=["GET", "POST"])
 def change_user_role(user_id):
     if request.method == "POST":
-        if current_user.act_role == 'admin': #only admin can change the role fo user
-          user = User.query.get(user_id)
-          if user:
-            new_role = request.form.get("new_role")
-            if new_role:
-              if new_role != user.act_role:
-                  user.act_role = new_role #update the user role to new role 
-                  db.session.commit() #commit changes of the session 
-                  flash("User role updated successfully!", category = 'success')
-              else:
-                 flash("New role is the same as the current role.",category ='error')
-            else:
-               flash ('No new roles are provided.',category ='error')
-          else:
-            flash("User not found!",category ='error')
-        else:
-          flash('You do not have permission to change user roles.' ,category ='error')
+        if current_user.act_role != 'admin':
+            flash('You do not have permission to change user roles.', category='error')
+            return redirect(url_for("admin"))
+
+        user = User.query.get(user_id)
+        if not user:
+            flash("User not found!", category='error')
+            return redirect(url_for("admin"))
+
+        new_role = request.form.get("new_role")
+        if not new_role:
+            flash('No new role provided.', category='error')
+            return redirect(url_for("admin"))
+
+        if new_role == user.act_role:
+            flash("New role is the same as the current role.", category='error')
+            return redirect(url_for("admin"))
+
+        # Update the user role
+        user.act_role = new_role
+        db.session.commit()
+        flash("User role updated successfully!", category='success')
+
     return redirect(url_for("admin"))
+
 
 # logout button only appears when logged in
 @myapp_obj.route("/logout", methods=['POST', 'GET'])
