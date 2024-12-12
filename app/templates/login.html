@@ -1,43 +1,50 @@
+<!-- login.html -->
 {% extends "base.html" %}
 {% block content %}
 <head>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
 </head>
+<div class="navbar">
+   <a href="/" class="navbar-link">&nbsp;&nbsp;&nbsp;VeriFace</a>
+</div>
 </style>
-<div class ="container">
-<div class ="text">
-<h1>Sign In</h1>
-</style>
-<body>
-<form action="" method="POST" novalidate>
-    {{form.hidden_tag()}}
+<div class="container">
+  <div class="text">
+    <h1>Sign In</h1>
+  </style>
+  <body>
+    <form action="" method="POST" novalidate>
+      {{ form.hidden_tag() }}
 
-    <p> {{form.username.label}} <br>
-       {{form.username(size=32)}}
-    {%for error in form.username.errors%}
-    <span style="color: red;"> [{{error}}]</span>
-    {% endfor %}
-    </p>
+      <p>
+        {{ form.username.label }} <br>
+        {{ form.username(size=32) }}
+        {% for error in form.username.errors %}
+        <span style="color: red;">[{{ error }}]</span>
+        {% endfor %}
+      </p>
 
-    <p> {{form.email.label}} <br>
-       {{form.email(size=32)}}
-    {%for error in form.email.errors%}
-    <span style="color: red;"> [{{error}}]</span>
-    {% endfor %}
-    </p>
+      <p>
+        {{ form.email.label }} <br>
+        {{ form.email(size=32) }}
+        {% for error in form.email.errors %}
+        <span style="color: red;">[{{ error }}]</span>
+        {% endfor %}
+      </p>
 
-    <p> {{form.password.label}} <br>
-       {{form.password(size=32)}}
-    {%for error in form.password.errors%}
-    <span style="color: red;"> [{{error}}]</span>
-    {% endfor %}
-    </p>
+      <p>
+        {{ form.password.label }} <br>
+        {{ form.password(size=32) }}
+        {% for error in form.password.errors %}
+        <span style="color: red;">[{{ error }}]</span>
+        {% endfor %}
+      </p>
 
-    <p>{{form.submit()}}</p>
-    <p> Don't have an account? Click the register button </p>
-    <p>{{form.register()}}</p>
+      <p>{{ form.submit() }}</p>
+      <p>Don't have an account? Click the register button</p>
+      <p>{{ form.register() }}</p>
     </div>
-    </div>
+  </div>
 
 </form>
 </body>

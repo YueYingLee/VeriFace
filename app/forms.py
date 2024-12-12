@@ -56,7 +56,7 @@ class AddEventsForm(FlaskForm):
     submit = SubmitField('Submit')
 
 class AddtoEventsForm(FlaskForm):
-    code = StringField('Class Code', validators=[DataRequired(), validators.Length(max=6)], render_kw={"placeholder": "1AA1AA"})
+    code = StringField('Event Code', validators=[DataRequired(), validators.Length(min=6,max=6)], render_kw={"placeholder": "1AA1AA"})
     submit = SubmitField('Submit')
 
 class ViewEventsForm(FlaskForm):

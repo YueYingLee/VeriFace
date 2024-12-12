@@ -1,3 +1,4 @@
+<!-- viewEvents.html -->
 {% extends "base.html" %}
 {% block content %}
 <head>
@@ -13,25 +14,25 @@
       <li class="nav-item">
         <a class="nav-link" href="/index">Home</a>
       </li>
-      {% if current_user_role in ["student", "guest"] %}
+      {% if current_user.act_role in ["student", "guest"] %}
       <li class="nav-item active">
         <a class="nav-link" href="/">View Events <span class="sr-only"> </span></a>
       </li>
-      {%endif%}
+      {% endif %}
 
-      {% if current_user_role in ["professor", "staff"] %}
+      {% if current_user.act_role in ["professor", "staff"] %}
      <li class="nav-item active">
         <a class="nav-link" href="/viewEvents">View Events<span class="sr-only"></span></a>
       </li>
       <li class="nav-item">
         <a class="nav-link" href="/addEvents">Add Events</a>
       </li>
-      {%endif%}
-      {% if current_user_role in ["student", "guest"] %}
+      {% endif %}
+      {% if current_user.act_role in ["student", "guest", "professor", "staff"] %}
         <li class="nav-item">
-          <a class="nav-link" href="/addtoEvents">Add Events</a>
+          <a class="nav-link" href="/addtoEvents">Signup Event</a>
         </li>
-      {%endif%}
+      {% endif %}
       <li class="nav-item">
         <a class="nav-link" href="/logout">Logout</a>
       </li>
@@ -39,6 +40,10 @@
   </div>
 </nav>
 </br>
+<!-- Dynamic Clock -->
+<div class="clock-container">
+  <p id="dynamicClock" style="font-size: 15px; font-weight: bold;"></p>
+</div>
 
 <h2>Events </h2>
 <table>
@@ -51,20 +56,20 @@
       {% if current_user_role in ["professor", "staff"] %}
         <th>Start Attendance</th>
       {% endif %}
-      <th>View Attendance </thth>
+      <th>View Attendance </th>
     </tr>
   </thread>
   <tbody>
-    {%for events in events%}
+    {% for events in events %}
     <tr> 
-      <td> {{events.eventName}}</td>
-      <td>{{events.date}}</td>
-      <td>{{events.time}}</td>
-      <td>{{events.code}}</td>
+      <td> {{ events.eventName }}</td>
+      <td>{{ events.date }}</td>
+      <td>{{ events.time }}</td>
+      <td>{{ events.code }}</td>
       {% if current_user_role in ["professor", "staff"] %}
-        <td><a href="{{url_for('attendance', id = events.id)}}">Start Attendance</a></td>
-      {% endif%}
-      <td><a href="{{url_for('viewAttendance', id = events.id)}}">View Attendance</a></td>
+        <td><a href="{{ url_for('start_attendance', id=events.id) }}" target="_blank">Start</a></td>
+      {% endif %}
+      <td><a href="{{ url_for('viewAttendance', id=events.id) }}">View Attendance</a></td>
     </tr>
     {% endfor %}
   </tbody>

@@ -59,17 +59,7 @@ def index():
     current_user_role = current_user.act_role
     if current_user.act_role == 'admin':
         return redirect('/admin')
-    ''' #if current_user.act_role == 'professor' or current_user.act_role == 'staff':
-    #     return redirect('/addEvents')
 
-    # made it so when student logs in they auto get checked into event 1 --> for testing and causes duplicates 
-    # so when we do actual attendance we need to query and make sure user has not registered for event and then add to db, if they already in event then dont add/do anything
-   
-    if current_user.act_role == 'student':
-        attendance = Attendance(eventID=1, userID=current_user.id, status='absent')
-        db.session.add(attendance)
-        db.session.commit()
-    '''
     form = HomeForm()
     return render_template('index.html', form = form, current_user_role = current_user_role)
 
@@ -128,17 +118,17 @@ def addtoEvents():
 
     if form.validate_on_submit():
         event = Event.query.filter_by(code =form.code.data).first()
-        # attend = Attendance.query.filter_by(eventID= event.id, userID=current_user.id).all() 
-        # if attend is None: #check if user is not added then add them to attendance table
-        current_user.events.append(event) ## ADDED
-        attendance = Attendance(eventID=event.id, userID=current_user.id, status='absent')
-        db.session.add(attendance)
-        db.session.commit()
-
-        return redirect("/index")
+        if event is not None: #checks if event is valid
+            current_user.events.append(event) ## ADDED
+            attendance = Attendance(eventID=event.id, userID=current_user.id, status='absent')
+            db.session.add(attendance)
+            db.session.commit()
+            return redirect("/index")
+        else:
+            flash("Invalid code")
+            return redirect("/addtoEvents")
+        
     return render_template('addtoEvents.html', form = form)
-
-
 
 @myapp_obj.route("/viewEvents", methods=['GET', 'POST'])
 def viewEvents():
@@ -159,11 +149,6 @@ def viewEvents():
 
 @myapp_obj.route("/attendance/<int:id>", methods=['GET', 'POST'])
 def attendance(id):
-    # if not current_user.is_authenticated: 
-    #     flash("You aren't logged in yet!")
-    #     return redirect('/')
-    # event = Event.query.get(id) 
-    # return redirect('/start/<int:id>', event = event)
     if not current_user.is_authenticated: 
         flash("You aren't logged in yet!")
         return redirect('/')
@@ -266,40 +251,53 @@ def UnapproveUser(id):
 
 @myapp_obj.route("/delete_user/<int:user_id>", methods=["POST"])
 def delete_user(user_id):
-    if request.method == "POST":
-        if current_user.act_role == 'admin': #User can only delete user if they are admin. Else, error message will be popped out
-          user = User.query.get(user_id)
-          if user: #if the user is found in database, delete the user and commit the change of the session
-            db.session.delete(user)
-            db.session.commit()
-            flash("User deleted successfully!", category = 'success')
-          else:
-            flash("User not found!", category ='error')
-        else:
-             flash('You do not have permission to delete users.' , category ='error')
+    if request.method != "POST":
+        return redirect(url_for("index"))
+
+    if current_user.act_role != 'admin':  # Check user role first
+        flash('You do not have permission to delete users.', category='error')
+        return redirect(url_for("index"))
+
+    user = User.query.get(user_id)
+    if not user:  # Check if the user exists
+        flash("User not found!", category='error')
+        return redirect(url_for("index"))
+
+    # If user exists and the role is admin, delete the user
+    db.session.delete(user)
+    db.session.commit()
+    flash("User deleted successfully!", category='success')
     return redirect(url_for("index"))
+
 
 @myapp_obj.route("/change_user_role/<int:user_id>", methods=["GET", "POST"])
 def change_user_role(user_id):
     if request.method == "POST":
-        if current_user.act_role == 'admin': #only admin can change the role fo user
-          user = User.query.get(user_id)
-          if user:
-            new_role = request.form.get("new_role")
-            if new_role:
-              if new_role != user.act_role:
-                  user.act_role = new_role #update the user role to new role 
-                  db.session.commit() #commit changes of the session 
-                  flash("User role updated successfully!", category = 'success')
-              else:
-                 flash("New role is the same as the current role.",category ='error')
-            else:
-               flash ('No new roles are provided.',category ='error')
-          else:
-            flash("User not found!",category ='error')
-        else:
-          flash('You do not have permission to change user roles.' ,category ='error')
+        if current_user.act_role != 'admin':
+            flash('You do not have permission to change user roles.', category='error')
+            return redirect(url_for("admin"))
+
+        user = User.query.get(user_id)
+        if not user:
+            flash("User not found!", category='error')
+            return redirect(url_for("admin"))
+
+        new_role = request.form.get("new_role")
+        if not new_role:
+            flash('No new role provided.', category='error')
+            return redirect(url_for("admin"))
+
+        if new_role == user.act_role:
+            flash("New role is the same as the current role.", category='error')
+            return redirect(url_for("admin"))
+
+        # Update the user role
+        user.act_role = new_role
+        db.session.commit()
+        flash("User role updated successfully!", category='success')
+
     return redirect(url_for("admin"))
+
 
 # logout button only appears when logged in
 @myapp_obj.route("/logout", methods=['POST', 'GET'])
@@ -336,7 +334,8 @@ def register():
     
 
     if form.validate_on_submit():
-        if form.reg_role.data != 'admin' and form.reg_role.data != 'student' and form.reg_role.data != 'professor'  and form.reg_role.data != 'guest':
+        if form.reg_role.data not in ['admin', 'student', 'professor', 'staff', 'guest']:
+        # if form.reg_role.data != 'admin' and form.reg_role.data != 'student' and form.reg_role.data != 'professor'  and form.reg_role.data != 'guest':
                 flash("Invalid role!")
                 return redirect ('/register')
         
@@ -423,36 +422,6 @@ def download(id):
     return send_file(BytesIO(img.data),
                      download_name=img.file, as_attachment=False) #change to true if want it to be downloaded auto; false rn to display on browser
 
-'''
-
-@myapp_obj.route('/download/<int:id>')
-def download(id):
-    img = User.query.filter_by(id=id).first()
-
-    if not img or not img.data:
-        return "Image not found", 404
-
-    # Determine MIME type dynamically based on file extension
-    mimetype, _ = guess_type(img.file)
-    mimetype = mimetype or "application/octet-stream"  # Fallback MIME type
-
-    return send_file(
-        BytesIO(img.data),
-        mimetype=mimetype,
-        download_name=img.file if img.file else f"user_{id}.jpg",
-        as_attachment=False
-    )
- 
-The idea is:
-    - constantly poll for RFID scans
-    - if nothing is scanned, camera just stays on and does nothing
-    - once there is a scan, stop scanning for any more RFID
-        - check if that ID is registered for this current event
-        - using that ID, start the facial recognition process to only look for the user associated with that ID
-            - if it takes too long, we can make it timeout so they have to scan RFID again (prevents infinite loop if no face matches)
-        - if face verified, mark attendance, and break out of facial recognition function, and go back to polling for RFID scans
-            - camera stays on the whole time until admin quits
-'''
 @myapp_obj.route('/start-attendance/<int:id>')
 def start_attendance(id):
     users_in_event = User.query.filter(User.events.any(id=id)).all()

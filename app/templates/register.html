@@ -1,8 +1,12 @@
+<!-- register.html -->
 {% extends "base.html" %}
 {% block content %}
 <head>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/register.css') }}">
 </head>
+<div class="navbar">
+   <a href="/" class="navbar-link">&nbsp;&nbsp;&nbsp;VeriFace</a>
+</div>
 <div class ="container">
 <div class ="text">
 <h1>Create a New Account</h1>
@@ -11,7 +15,7 @@
     {{form.hidden_tag()}}
 
     <body> Possible roles are: guest, student, professor, staff, and admin </body>
-      <!--   {{form.reg_role(size=32)}}  --->
+      <!--   {{form.reg_role(size=32)}}  -->
       <div class="form-group"> </div>
          <select id="reg_role" name="reg_role" class="form-control" required>
              <option value="" disabled selected>Select Role</option>
