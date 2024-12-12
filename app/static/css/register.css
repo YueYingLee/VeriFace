@@ -9,18 +9,18 @@ color: #000000;
 margin: 0;
 }
 .navbar {
-background-color: #4170a2; 
-text-align: center;
-padding: 50px 0;
-font-size: 30px;
-color: black; /* Black text color */
-font-weight: bold; /* Bold font weight */
+    background-color: #4760A2;  /* 4760A2, 688EBD, 4170a2*/
+    text-align: center;
+    padding: 50px 0;
+    font-size: 30px;
+    color: black; /* Black text color */
+    font-weight: bold; /* Bold font weight */
 } 
 
 .navbar-link {
-color: black; /* Set the color to black */
-text-decoration: none; /* Remove underline */
-}
+    color: black; /* Set the color to black */
+    text-decoration: none; /* Remove underline */
+    }
 
 
 .container {

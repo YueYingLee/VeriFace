@@ -1,18 +1,19 @@
+<!-- logout.html -->
 {% extends "base.html" %}
 {% block content %}
 <head>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/logout.css') }}">  
 </head> 
 <div class="navbar">
-    <a href="/"class="navbar-link">&nbsp;&nbsp;&nbsp;VeriFace </a>
+    <a href="/" class="navbar-link">&nbsp;&nbsp;&nbsp;VeriFace</a>
 </div>
- <br>
- <h1>  Are you sure you want logout? </h1>
-<div class ="container">    
+<br>
+<h1>Are you sure you want logout?</h1>
+<div class="container">    
     <form action="" method="post" novalidate>
-        {{form.hidden_tag()}}
-        <p> {{ form.submit(class="btn btn-submit") }} </p>
-       <a href="{{url_for('index')}}" class = "btn" style = "background-color: rgb(80, 204, 113)">Back to Home Page</a>  
+        {{ form.hidden_tag() }}
+        <p>{{ form.submit(class="btn btn-submit") }}</p>
+        <a href="{{ url_for('index') }}" class="btn" style="background-color: rgb(80, 204, 113)">Back to Home Page</a>  
     </form> 
 </div> 
 

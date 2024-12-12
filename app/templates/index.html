@@ -1,3 +1,4 @@
+<!-- index.html -->
 {% extends "base.html" %}
 {% block content %}
 <head>
@@ -34,7 +35,7 @@
         <li class="nav-item">
           <a class="nav-link" href="/addEvents">Add Events</a>
         </li>
-      {%endif%}
+      {% endif %}
       <li class="nav-item">
         <a class="nav-link" href="/addtoEvents">Add Events</a>
       </li>
@@ -50,25 +51,25 @@
 <div class="clock-container">
   <p id="dynamicClock" style="font-size: 15px; font-weight: bold;"></p>
 </div>
-<p>Welcome {{current_user.username}}!</p>
+<p>Welcome {{ current_user.username }}!</p>
 
-<div class ="container"> 
-  <div class = "boxing"> 
+<div class="container"> 
+  <div class="boxing"> 
     <br>
-   <!-- <p> Welcome {{current_user.username}}!</p> -->
+   <!-- <p> Welcome {{ current_user.username }}!</p> -->
   </div>
   <h2>Account Info</h2>
-  <div class = "text">
-    <p>Username: {{current_user.username}}</p>
-    <p>First Name: {{current_user.fname}}</p>
-    <p>Last Name: {{current_user.lname}}</p>
-    <p>Email: {{current_user.email}}</p>
-    <p>Your role: {{current_user.act_role}}</p>
+  <div class="text">
+    <p>Username: {{ current_user.username }}</p>
+    <p>First Name: {{ current_user.fname }}</p>
+    <p>Last Name: {{ current_user.lname }}</p>
+    <p>Email: {{ current_user.email }}</p>
+    <p>Your role: {{ current_user.act_role }}</p>
     <p><a href="download/{{ current_user.id }}">Profile</a></p>
   </div>
 </div>
-    <!--  <div class ="card container">  --> 
- <div class ="grid-container">
+    <!--  <div class="card container">  --> 
+ <div class="grid-container">
   {% if current_user_role in ["professor", "staff"] %}
     <div class="card" onclick="window.location.href='/addEvents'"> 
       <h2> Add Events </h2>
@@ -78,7 +79,7 @@
       <h2> View Events </h2>
     </div>  
    
-    <div class="card" onclick ="window.location. href='/viewEvents'"> 
+    <div class="card" onclick="window.location.href='/viewEvents'"> 
       <h2> Start Attendance </h2>
     </div>  
    
