@@ -129,24 +129,65 @@
 </table>
 
 <script>
-    function openRfidPopup(userId) {
-        console.log(`Starting RFID scan for user ID: ${userId}`);
-        fetch(`/trigger_rfid/${userId}`, {
-            method: "POST",
-        })
-        .then((response) => response.json())
-        .then((data) => {
-            if (data.success) {
-                alert(`RFID tag ${data.rfid_tag} assigned successfully!`);
-                location.reload();  // Reload to reflect changes
-            } else {
-                alert(data.message || "Error assigning RFID tag.");
-            }
-        })
-        .catch((error) => {
-            console.error("Error:", error);
-            alert("Error communicating with RFID reader.");
-        });
-    }
+  function openRfidPopup(userId) {
+      // Show a flash message
+      const flashMessage = document.createElement('div');
+      flashMessage.id = 'rfid-flash';
+      flashMessage.textContent = "Scanning...";
+      flashMessage.style.position = 'fixed';
+      flashMessage.style.top = '10px';
+      flashMessage.style.right = '10px';
+      flashMessage.style.backgroundColor = '#f0ad4e';
+      flashMessage.style.color = '#fff';
+      flashMessage.style.padding = '10px';
+      flashMessage.style.borderRadius = '5px';
+      flashMessage.style.zIndex = '1000';
+      document.body.appendChild(flashMessage);
+
+      // Track if the flash message has been removed
+      let flashRemoved = false;
+
+      // Automatically remove the flash message after 10 seconds
+      const timeout = setTimeout(() => {
+          if (!flashRemoved) {
+              const flash = document.getElementById('rfid-flash');
+              if (flash) {
+                  document.body.removeChild(flash);
+                  flashRemoved = true;
+              }
+          }
+      }, 10000); // 10 seconds
+
+      // Make the RFID fetch request
+      console.log(`Starting RFID scan for user ID: ${userId}`);
+      fetch(`/trigger_rfid/${userId}`, {
+          method: "POST",
+      })
+      .then((response) => response.json())
+      .then((data) => {
+          if (data.success) {
+              alert(`RFID tag ${data.rfid_tag} assigned successfully!`);
+              location.reload(); // Reload to reflect changes
+          } else {
+              alert(data.message || "Error assigning RFID tag.");
+          }
+      })
+      .catch((error) => {
+          console.error("Error:", error);
+          alert("Error communicating with RFID reader.");
+      })
+      .finally(() => {
+          // Remove the flash message if still present
+          if (!flashRemoved) {
+              const flash = document.getElementById('rfid-flash');
+              if (flash) {
+                  document.body.removeChild(flash);
+                  flashRemoved = true;
+              }
+          }
+          clearTimeout(timeout); // Clear the timeout to prevent double removal
+      });
+  }
 </script>
+
 {% endblock %}
