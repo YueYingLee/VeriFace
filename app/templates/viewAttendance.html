@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block content %}
+<head>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
+</head>
+<nav class="navbar navbar-expand-lg navbar-light">
+  <a class="navbar-brand" href="/">VeriFace</a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  <div class="collapse navbar-collapse" id="navbarNav">
+    <ul class="navbar-nav">
+      <li class="nav-item active">
+        <a class="nav-link" href="/">Home</a> 
+        <!-- do we need to include a header that says where they currently are for this page?? i think we can create one w/o nav bar and focus on the start/stop and other ui but for now i have navbar here -->
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="/viewEvents">View Events</a>
+      </li>
+      {% if current_user.act_role == 'professor' or current_user.act_role == 'staff'%}
+        <li class="nav-item">
+          <a class="nav-link" href="/addEvents">Add Events</a>
+        </li>
+      {%endif%}
+      {% if current_user.act_role == 'student' or current_user.act_role == 'guest'%}
+        <li class="nav-item">
+          <a class="nav-link" href="/addtoEvents">Add Events</a>
+        </li>
+      {%endif%}
+      <li class="nav-item">
+        <a class="nav-link" href="/logout">Logout</a>
+      </li>
+    </ul>
+  </div>
+</nav>
+</br>
+
+<h2>Users </h2>
+<table>
+  <thread>
+    <tr>
+      <th>User ID</th>
+      <th>First Name </th>
+      <th>Last Name </th>
+      <th>User Role</th>
+      <th>Status</th>
+    </tr>
+  </thread>
+  <tbody>
+    {% if current_user.act_role == 'professor' or current_user.act_role == 'staff'%} 
+      {%for a in a%}
+        {%for users in users%}
+        <tr> 
+          {% if a.userID == users.id %}
+            <td> {{users.id}}</td>
+            <td> {{users.fname}}</td>
+            <td> {{users.lname}}</td>
+            <td> {{users.act_role}}</td>
+            <td> {{a.status}} </td>
+            {%endif%}
+        </tr>
+        {% endfor %}
+      {% endfor %}
+    {%endif%}
+    {% if current_user.act_role == 'student' or current_user.act_role == 'guest'%}
+      {%for a in a%}
+        {%for users in users%}
+        <tr> 
+          {% if a.userID == users.id and a.userID == current_user.id%}
+            <td> {{users.id}}</td>
+            <td> {{users.fname}}</td>
+            <td> {{users.lname}}</td>
+            <td> {{users.act_role}}</td>
+            <td> {{a.status}} </td>
+            {%endif%}
+        </tr>
+        {% endfor %}
+      {% endfor %}
+    {%endif%}
+  </tbody>
+</table>
+
+{% endblock %}

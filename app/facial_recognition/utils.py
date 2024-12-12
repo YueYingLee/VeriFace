@@ -11,7 +11,10 @@ import serial
 import serial.tools.list_ports
 from . import recognition_handler
 import time
-from .global_vars import frame_queue, end_event
+from .global_vars import frame_queue, end_event, rfid_port, baud_rate
+from ..models import Attendance
+from app import db, myapp_obj
+from sqlalchemy import update
 
 facial_path = os.path.dirname(os.path.abspath(__file__))                            # Path to facial_recognition/
 app_path = os.path.dirname(facial_path)                                             # Path to app/ 
@@ -21,7 +24,7 @@ supported_extensions = ('.jpg', '.jpeg', '.png')
 
 def encode_image(file):
     # if invalid extension type
-    if not file.filename.endswith(supported_extensions):
+    if not file.filename.lower().endswith(supported_extensions):
         raise ValueError(f'Invalid file type! Supported types are {supported_extensions}')
     
     # process file and encode it
@@ -44,7 +47,7 @@ def encode_image(file):
 
 
 def display_camera():
-    cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture(0) ##
 
     while True:
         ret, frame = cap.read()
@@ -77,7 +80,7 @@ Parameters:
     - users: a list of all users that are part of the event
     - cap: instance of OpenCV video capture
 '''
-def poll_rfid(users):
+def poll_rfid(users,id):
     ser = connect_serial()
 
     while not end_event.is_set():
@@ -93,7 +96,7 @@ def poll_rfid(users):
 
                 if verified_user:
                     print('Verified user! Marking attendance...')
-                    mark_attendance(verified_user)
+                    mark_attendance(verified_user,id)
                 else:
                     print('Face not recognized or timed out. Please rescan RFID and try again.')
 
@@ -112,9 +115,9 @@ Returns:
 '''
 def connect_serial():
     try:
-        ser = serial.Serial('/dev/tty.usbmodem14101', 9600, timeout=1) # make it dynamically choose the serial port depending on the OS
+        ser = serial.Serial(rfid_port, baud_rate, timeout=1) # make it dynamically choose the serial port depending on the OS
         time.sleep(2)  # Allow time for the connection to establish
-        print(f"Connected to /dev/tty.usbserial-1410")
+        print(f"Connected to {rfid_port}")
         return ser
 
     except serial.SerialException as e:
@@ -144,7 +147,7 @@ def is_valid_for_event(rfid_data, users):
     return rfid_data in rfid_list
 
 
-def mark_attendance(user):
+def mark_attendance(user,id):
     current_datetime = datetime.now().strftime("%B %d, %Y %I:%M:%S %p")
     current_date = datetime.now().strftime("%m-%d-%Y")
     filename = os.path.join(attendance_path, current_date) + '.csv'
@@ -160,5 +163,21 @@ def mark_attendance(user):
         if os.stat(filename).st_size == 0:
             writer.writeheader()
         writer.writerow(row)
+        
+        #figure out how to get eventID
+        
+    with myapp_obj.app_context():
+        # attendance = Attendance(eventID=id, userID=user.id, status='present') adds new row
+        # db.session.add(attendance)
+        #test 1
+        attendance = Attendance.query.filter_by(eventID=id, userID=user.id).one()
+        attendance.status = 'present'
+        db.session.commit()
+
+        #test 2
+        # a = update(Attendance)
+        # a = a.values(status = 'present')
+        # a. a.where(eventID = id, userID=user.id)
+        # db.session.commit()
 
         print(f'Marked attendance for {row["Name"]}')

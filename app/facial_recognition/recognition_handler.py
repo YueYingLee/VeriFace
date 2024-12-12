@@ -4,9 +4,12 @@ import face_recognition as fr
 import numpy as np
 import time
 from .global_vars import frame_queue
+import csv
+import os
+import datetime
 
 RECOGNITION_THRESHOLD = 0.5     # if the difference in comparision is under this threshold --> face is a match
-CONFIRM_FACE = 8               # must verify face for this many frames prevent a false match
+CONFIRM_FACE = 5               # must verify face for this many frames prevent a false match
 FRAME_INTERVAL = 2              # run encoding algorithm in intervals to prevent camera lag
 IMAGE_SCALE_FACTOR = 0.33       # scale image down by this factor to improve encoding performance
 TIMEOUT_SECONDS = 10            # timeout in seconds to prevent infinite scanning
@@ -25,6 +28,10 @@ Returns:
     - target_user[0]: the identified user, else return None
 '''
 def start_facial_recognition(target_rfid, users):
+    time_between_processing = 0
+    time_between_attendance = 0
+
+
     frame_count = 0
     confirm_face = 0
     name = None
@@ -47,6 +54,7 @@ def start_facial_recognition(target_rfid, users):
         
         # Process every few frames
         if frame_count % FRAME_INTERVAL == 0:
+            start_time = datetime.datetime.now()
             face_location = fr.face_locations(small_frame)
             if len(face_location) > 1:
                 print('Please have only 1 face in frame at a time.')
@@ -79,9 +87,28 @@ def start_facial_recognition(target_rfid, users):
                 cv2.rectangle(frame, (left, top), (right, bottom), (0, 255, 0), 3)
                 cv2.putText(frame, name, (left, bottom + 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (190, 200, 50), 2)
         
+        end_time = datetime.datetime.now()
+        diff = end_time - start_time
+        time_between_processing = diff.total_seconds() * 1000
+        time_between_attendance += time_between_processing
         frame_count += 1
 
     if (confirm_face >= CONFIRM_FACE):
+        header = ['elapsed_time_between_processing', 'elapsed_time_for_attendance']
+        row = {
+            'elapsed_time_between_processing': time_between_processing,
+            'elapsed_time_for_attendance': time_between_attendance
+        }
+        with open('time.csv', 'a', newline='') as f:
+
+            writer = csv.DictWriter(f, fieldnames=header)
+
+            if os.stat('time.csv').st_size == 0:
+                writer.writeheader()
+
+            writer.writerow(row)
+            
+
         return target_user[0]
     else:
         print('no faces scanned')
