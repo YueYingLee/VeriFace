@@ -14,13 +14,13 @@
       <li class="nav-item">
         <a class="nav-link" href="/index">Home</a>
       </li>
-      {% if current_user_role in ["student", "guest"] %}
+      {% if current_user.act_role in ["student", "guest"] %}
       <li class="nav-item active">
         <a class="nav-link" href="/">View Events <span class="sr-only"> </span></a>
       </li>
       {% endif %}
 
-      {% if current_user_role in ["professor", "staff"] %}
+      {% if current_user.act_role in ["professor", "staff"] %}
      <li class="nav-item active">
         <a class="nav-link" href="/viewEvents">View Events<span class="sr-only"></span></a>
       </li>
@@ -28,9 +28,9 @@
         <a class="nav-link" href="/addEvents">Add Events</a>
       </li>
       {% endif %}
-      {% if current_user_role in ["student", "guest"] %}
+      {% if current_user.act_role in ["student", "guest", "professor", "staff"] %}
         <li class="nav-item">
-          <a class="nav-link" href="/addtoEvents">Add Events</a>
+          <a class="nav-link" href="/addtoEvents">Signup Event</a>
         </li>
       {% endif %}
       <li class="nav-item">
@@ -40,6 +40,10 @@
   </div>
 </nav>
 </br>
+<!-- Dynamic Clock -->
+<div class="clock-container">
+  <p id="dynamicClock" style="font-size: 15px; font-weight: bold;"></p>
+</div>
 
 <h2>Events </h2>
 <table>

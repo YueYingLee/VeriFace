@@ -17,8 +17,13 @@
       <li class="nav-item">
         <a class="nav-link" href="/viewEvents">View Events</a>
       </li>
+      {% if current_user.act_role in ["professor", "staff"] %}
+       <li class="nav-item">
+         <a class="nav-link" href="/addEvents">Add Events</a>
+       </li>
+       {% endif %}
       <li class="nav-item active">
-        <a class="nav-link" href="/addtoEvents">Add Events<span class="sr-only"></span></a>
+        <a class="nav-link" href="/addtoEvents">Signup Event<span class="sr-only"></span></a>
       </li>
       <li class="nav-item">
         <a class="nav-link" href="/logout">Logout</a>
@@ -27,9 +32,13 @@
   </div>
 </nav>
 </br>
+<!-- Dynamic Clock -->
+<div class="clock-container">
+  <p id="dynamicClock" style="font-size: 15px; font-weight: bold;"></p>
+</div>
 <div class="container">
   <div class="text">
-    <h1>Add To Event</h1>
+    <h1>Signup for Event</h1>
     </style>
     <body>
       <form action="" method="POST" novalidate>

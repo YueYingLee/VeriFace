@@ -59,17 +59,7 @@ def index():
     current_user_role = current_user.act_role
     if current_user.act_role == 'admin':
         return redirect('/admin')
-    ''' #if current_user.act_role == 'professor' or current_user.act_role == 'staff':
-    #     return redirect('/addEvents')
 
-    # made it so when student logs in they auto get checked into event 1 --> for testing and causes duplicates 
-    # so when we do actual attendance we need to query and make sure user has not registered for event and then add to db, if they already in event then dont add/do anything
-   
-    if current_user.act_role == 'student':
-        attendance = Attendance(eventID=1, userID=current_user.id, status='absent')
-        db.session.add(attendance)
-        db.session.commit()
-    '''
     form = HomeForm()
     return render_template('index.html', form = form, current_user_role = current_user_role)
 
@@ -128,17 +118,17 @@ def addtoEvents():
 
     if form.validate_on_submit():
         event = Event.query.filter_by(code =form.code.data).first()
-        # attend = Attendance.query.filter_by(eventID= event.id, userID=current_user.id).all() 
-        # if attend is None: #check if user is not added then add them to attendance table
-        current_user.events.append(event) ## ADDED
-        attendance = Attendance(eventID=event.id, userID=current_user.id, status='absent')
-        db.session.add(attendance)
-        db.session.commit()
-
-        return redirect("/index")
+        if event is not None: #checks if event is valid
+            current_user.events.append(event) ## ADDED
+            attendance = Attendance(eventID=event.id, userID=current_user.id, status='absent')
+            db.session.add(attendance)
+            db.session.commit()
+            return redirect("/index")
+        else:
+            flash("Invalid code")
+            return redirect("/addtoEvents")
+        
     return render_template('addtoEvents.html', form = form)
-
-
 
 @myapp_obj.route("/viewEvents", methods=['GET', 'POST'])
 def viewEvents():
@@ -261,18 +251,24 @@ def UnapproveUser(id):
 
 @myapp_obj.route("/delete_user/<int:user_id>", methods=["POST"])
 def delete_user(user_id):
-    if request.method == "POST":
-        if current_user.act_role == 'admin': #User can only delete user if they are admin. Else, error message will be popped out
-          user = User.query.get(user_id)
-          if user: #if the user is found in database, delete the user and commit the change of the session
-            db.session.delete(user)
-            db.session.commit()
-            flash("User deleted successfully!", category = 'success')
-          else:
-            flash("User not found!", category ='error')
-        else:
-             flash('You do not have permission to delete users.' , category ='error')
+    if request.method != "POST":
+        return redirect(url_for("index"))
+
+    if current_user.act_role != 'admin':  # Check user role first
+        flash('You do not have permission to delete users.', category='error')
+        return redirect(url_for("index"))
+
+    user = User.query.get(user_id)
+    if not user:  # Check if the user exists
+        flash("User not found!", category='error')
+        return redirect(url_for("index"))
+
+    # If user exists and the role is admin, delete the user
+    db.session.delete(user)
+    db.session.commit()
+    flash("User deleted successfully!", category='success')
     return redirect(url_for("index"))
+
 
 @myapp_obj.route("/change_user_role/<int:user_id>", methods=["GET", "POST"])
 def change_user_role(user_id):
@@ -338,7 +334,8 @@ def register():
     
 
     if form.validate_on_submit():
-        if form.reg_role.data != 'admin' and form.reg_role.data != 'student' and form.reg_role.data != 'professor'  and form.reg_role.data != 'guest':
+        if form.reg_role.data not in ['admin', 'student', 'professor', 'staff', 'guest']:
+        # if form.reg_role.data != 'admin' and form.reg_role.data != 'student' and form.reg_role.data != 'professor'  and form.reg_role.data != 'guest':
                 flash("Invalid role!")
                 return redirect ('/register')
         
