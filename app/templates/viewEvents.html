@@ -55,8 +55,10 @@
       <th>Class Code </th>
       {% if current_user_role in ["professor", "staff"] %}
         <th>Start Attendance</th>
+        <th> Delete event</th>
       {% endif %}
       <th>View Attendance </th>
+     
     </tr>
   </thread>
   <tbody>
@@ -68,7 +70,11 @@
       <td>{{ events.code }}</td>
       {% if current_user_role in ["professor", "staff"] %}
         <td><a href="{{ url_for('start_attendance', id=events.id) }}" target="_blank">Start</a></td>
+        <td> <form action="{{ url_for('delete_event', id=events.id) }}" method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this event?');">
+          <button type="submit">Delete</button>
+      </form> </td>
       {% endif %}
+      
       <td><a href="{{ url_for('viewAttendance', id=events.id) }}">View Attendance</a></td>
     </tr>
     {% endfor %}

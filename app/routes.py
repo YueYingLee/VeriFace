@@ -270,6 +270,26 @@ def delete_user(user_id):
     return redirect(url_for("index"))
 
 
+@myapp_obj.route("/delete_event/<int:id>", methods=["POST"])
+def delete_event(id):
+    if request.method != "POST":
+        return redirect(url_for("index"))
+
+    if current_user.act_role != 'professor' or current_user.act_role != 'staff':  # Check user role first
+        flash('You do not have permission to delete users.', category='error')
+        return redirect(url_for("index"))
+
+    event = Event.query.get(id)
+    if not event:  # Check if the user exists
+        flash("Event not found!", category='error')
+        return redirect(url_for("index"))
+
+    # If user exists and the role is admin, delete the user
+    db.session.delete(event)
+    db.session.commit()
+    flash("Event deleted successfully!", category='success')
+    return redirect(url_for("index"))
+
 @myapp_obj.route("/change_user_role/<int:user_id>", methods=["GET", "POST"])
 def change_user_role(user_id):
     if request.method == "POST":
